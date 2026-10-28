@@ -1,5 +1,5 @@
 import {useEffect,useState} from 'react';import {Link} from 'react-router-dom';import {listWatches,colorsOf,cover} from '../services/watches';import {useToast} from '../context/ToastContext';import {naira} from '../services/config';import Reveal from '../components/Reveal';
-const STEPS=[['Pick','Choose a watch and your favourite colour.'],['Pay','Check out securely with Paystack, right here.'],['Earn','Every order earns credits for your next one.']];
+const STEPS=[['Pick','Choose a watch and your favourite colour.'],['Order','Send your order on WhatsApp and pay us directly.'],['Track','Follow packaging and delivery from your account, and earn credits.']];
 const Pic=({w})=>{const s=cover(w);return <div className="im">{s?<img src={s} alt={w.name} loading="lazy"/>:<span aria-hidden="true">⌚</span>}</div>};
 export default function Shop(){
  const [w,setW]=useState([]),[brand,setBrand]=useState('All'),[q,setQ]=useState(''),[busy,setBusy]=useState(true),toast=useToast();

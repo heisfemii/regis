@@ -1,13 +1,15 @@
 import {useEffect,useState} from 'react';
 import {listWatches,addWatch,updateWatch,deleteWatch,uploadImage,colorsOf,cover} from '../services/watches';
-import {allOrders,listUsers,markPaid,cancelOrder} from '../services/orders';import {auth} from '../services/firebase';
+import {allOrders,listUsers,confirmOrder,setStage,stageOf,cancelOrder} from '../services/orders';import {LABEL} from '../components/Tracker';import {auth} from '../services/firebase';
 import {useToast} from '../context/ToastContext';import {naira,fmtDate} from '../services/config';
 const blank=()=>({name:'',brand:'',strap:'',price:'',description:'',inStock:true,colors:[{name:'',images:[]}]});
+const NEXT={packaging:['out_for_delivery','Mark out for delivery'],out_for_delivery:['delivered','Mark delivered']};
 const TABS=['Overview','Watches','Orders','Customers'];
 const Thumb=({s})=>s?<img className="thumb" src={s} alt=""/>:<div className="thumb"/>;
-function OrderRow({x,act}){return <div className="orow"><div className="ohead"><div><b>#{x.id.slice(0,8).toUpperCase()}</b> · {x.customer} <span className="muted">· {x.email} · {fmtDate(x.createdAt)}</span></div><div><b>{naira(x.total)}</b> · <span className={'tag '+x.status}>{x.status}</span></div></div>
+function OrderRow({x,act}){return <div className="orow"><div className="ohead"><div><b>#{x.id.slice(0,8).toUpperCase()}</b> · {x.customer} <span className="muted">· {x.email} · {fmtDate(x.createdAt)}</span></div><div><b>{naira(x.total)}</b> · <span className={'tag '+x.status}>{x.status==='cancelled'?'cancelled':LABEL[stageOf(x)]}</span></div></div>
  {x.items.map((i,n)=><div className="arow" key={n}><Thumb s={i.image}/><div className="grow"><b>{i.name}</b><p className="muted">{i.brand} · {i.color} · {i.strap} · x{i.qty}</p></div><span>{naira(i.price*i.qty)}</span></div>)}
- {act&&x.status==='pending'&&<div className="ctas left"><button className="pill" onClick={()=>window.confirm('Confirm payment received?')&&act.paid(x)}>Mark paid</button><button className="pill ghost" onClick={()=>act.cancel(x)}>Cancel</button></div>}</div>}
+ {act&&x.status==='pending'&&<div className="ctas left"><button className="pill" disabled={act.busy} onClick={()=>window.confirm('Confirm payment received? The customer gets a thank-you email.')&&act.confirm(x)}>Confirm payment</button><button className="pill ghost" onClick={()=>act.cancel(x)}>Cancel</button></div>}
+ {act&&x.status==='paid'&&NEXT[stageOf(x)]&&<div className="ctas left"><button className="pill" onClick={()=>act.next(x)}>{NEXT[stageOf(x)][1]}</button></div>}</div>}
 export default function Admin(){
  const toast=useToast(),[tab,setTab]=useState('Overview'),[w,setW]=useState([]),[o,setO]=useState([]),[u,setU]=useState([]),[f,setF]=useState(blank()),[eid,setEid]=useState(null),[busy,setBusy]=useState(false),[mail,setMail]=useState({subject:'',message:''});
  const load=()=>{listWatches().then(setW);allOrders().then(setO);listUsers().then(setU)};useEffect(load,[]);
@@ -22,13 +24,14 @@ export default function Admin(){
   setBusy(true);const d={name:f.name,brand:f.brand,strap:f.strap,description:f.description,inStock:f.inStock,price:Number(f.price),colors};
   try{eid?await updateWatch(eid,d):await addWatch(d);toast(eid?'Watch updated':'Watch added');reset();load()}catch{toast('Could not save')}setBusy(false)}
  const run=async(fn,m)=>{try{await fn();toast(m);load()}catch{toast('Failed')}};
- const act={paid:x=>run(()=>markPaid(x),'Marked paid'),cancel:x=>run(()=>cancelOrder(x),'Cancelled')};
+ const doConfirm=async x=>{setBusy(true);try{const j=await confirmOrder(x);toast(j.emailed===false?'Payment confirmed. Email not sent: '+j.emailError:'Payment confirmed. Thank-you email sent');load()}catch(e){toast(e.message||'Failed')}setBusy(false)};
+ const act={busy,confirm:doConfirm,next:x=>run(()=>setStage(x,NEXT[stageOf(x)][0]),'Order updated'),cancel:x=>run(()=>cancelOrder(x),'Cancelled')};
  const emails=u.map(x=>x.email).filter(Boolean),paid=o.filter(x=>x.status==='paid');
  async function send(){
   if(!mail.subject||!mail.message)return toast('Add a subject and message');
   if(!window.confirm(`Send this to ${emails.length} customers?`))return;
   setBusy(true);
-  try{const t=await auth.currentUser.getIdToken(),r=await fetch('/api/send-promo',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify(mail)}),j=await r.json();if(!r.ok)throw new Error(j.error);toast(`Sent to ${j.sent} customers`);setMail({subject:'',message:''})}catch(e){toast(e.message||'Could not send')}
+  try{const t=await auth.currentUser.getIdToken(),r=await fetch('/api/send-promo',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify(mail)}),j=await r.json().catch(()=>({error:'Server error '+r.status}));if(!r.ok)throw new Error(j.error);toast(`Sent to ${j.sent} customers`);setMail({subject:'',message:''})}catch(e){toast(e.message||'Could not send')}
   setBusy(false)}
  return <div className="adm"><h1 className="title">Dashboard</h1>
   <div className="chips" role="tablist">{TABS.map(t=><button key={t} className={t===tab?'on':''} onClick={()=>setTab(t)}>{t}</button>)}</div>

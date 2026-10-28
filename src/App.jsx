@@ -6,7 +6,7 @@ export default function App(){
  const {user,isAdmin,logout,loading}=useAuth(),{count}=useCart(),{pathname}=useLocation();
  if(loading)return <div className="boot">REGIS</div>;
  return <>
-  <div className="ann">Secure checkout with Paystack · Nationwide delivery · Earn credits on every order</div>
+  <div className="ann">Order on WhatsApp · Nationwide delivery · Earn credits on every order</div>
   <header className="top"><div className="bar"><Link to="/" className="logo">REGIS</Link>
    <nav className="mid" aria-label="Main"><a href="/#latest">Latest</a><a href="/#shop">Shop</a><a href="/#how">How it works</a></nav>
    <div className="right">
@@ -20,11 +20,11 @@ export default function App(){
    <Route path="/admin" element={isAdmin?<Admin/>:<Navigate to="/"/>}/>
   </Routes></div>
   <footer><div className="fwrap">
-   <p className="fnote">Regis sells watches under their real brand names. Prices are in Naira (₦). Payments are processed securely by Paystack.</p>
+   <p className="fnote">Regis sells watches under their real brand names. Prices are in Naira (₦). Payment is confirmed with you directly on WhatsApp.</p>
    <div className="fcols">
     <div><h4>Shop</h4><a href="/#latest">The latest</a><a href="/#shop">Collection</a><Link to="/cart">Cart</Link></div>
     <div><h4>Account</h4><Link to={user?'/account':'/login'}>{user?'My account':'Log in'}</Link><Link to="/login">Create account</Link></div>
-    <div><h4>Customer support</h4><a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noreferrer">WhatsApp support</a><a href={`https://mail.google.com/mail/?view=cm&fs=1&to=${SUPPORT_EMAIL}`} target="_blank" rel="noreferrer">Email support</a></div>
+    <div><h4>Customer support</h4><a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noreferrer">WhatsApp</a><a href={`https://mail.google.com/mail/?view=cm&fs=1&to=${SUPPORT_EMAIL}`} target="_blank" rel="noreferrer">Email support</a></div>
     <div><h4>Follow</h4><a href="https://instagram.com/regis.watch" target="_blank" rel="noreferrer">Instagram</a><a href="https://x.com/Regis_watches" target="_blank" rel="noreferrer">X</a></div>
    </div>
    <p className="legal">Copyright © {new Date().getFullYear()} Regis. All rights reserved. Nigeria.</p>
