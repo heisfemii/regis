@@ -1,23 +1,53 @@
 import {useEffect,useState} from 'react';
-import {listWatches,addWatch,deleteWatch,updateWatch,uploadImage} from '../services/watches';import {allOrders,markPaid,cancelOrder} from '../services/orders';
-import {useToast} from '../context/ToastContext';import {naira} from '../services/config';
-const blank={name:'',brand:'',color:'',strap:'',price:'',image:'',inStock:true};
+import {listWatches,addWatch,updateWatch,deleteWatch,uploadImage,colorsOf,cover} from '../services/watches';
+import {allOrders,listUsers,markPaid,cancelOrder} from '../services/orders';import {auth} from '../services/firebase';
+import {useToast} from '../context/ToastContext';import {naira,fmtDate} from '../services/config';
+const blank=()=>({name:'',brand:'',strap:'',price:'',description:'',inStock:true,colors:[{name:'',images:[]}]});
+const TABS=['Overview','Watches','Orders','Customers'];
+const Thumb=({s})=>s?<img className="thumb" src={s} alt=""/>:<div className="thumb"/>;
+function OrderRow({x,act}){return <div className="orow"><div className="ohead"><div><b>#{x.id.slice(0,8).toUpperCase()}</b> · {x.customer} <span className="muted">· {x.email} · {fmtDate(x.createdAt)}</span></div><div><b>{naira(x.total)}</b> · <span className={'tag '+x.status}>{x.status}</span></div></div>
+ {x.items.map((i,n)=><div className="arow" key={n}><Thumb s={i.image}/><div className="grow"><b>{i.name}</b><p className="muted">{i.brand} · {i.color} · {i.strap} · x{i.qty}</p></div><span>{naira(i.price*i.qty)}</span></div>)}
+ {act&&x.status==='pending'&&<div className="ctas left"><button className="pill" onClick={()=>window.confirm('Confirm payment received?')&&act.paid(x)}>Mark paid</button><button className="pill ghost" onClick={()=>act.cancel(x)}>Cancel</button></div>}</div>}
 export default function Admin(){
- const toast=useToast(),[w,setW]=useState([]),[o,setO]=useState([]),[f,setF]=useState(blank),[busy,setBusy]=useState(false);
- const load=()=>{listWatches().then(setW);allOrders().then(setO)};useEffect(load,[]);
+ const toast=useToast(),[tab,setTab]=useState('Overview'),[w,setW]=useState([]),[o,setO]=useState([]),[u,setU]=useState([]),[f,setF]=useState(blank()),[eid,setEid]=useState(null),[busy,setBusy]=useState(false),[mail,setMail]=useState({subject:'',message:''});
+ const load=()=>{listWatches().then(setW);allOrders().then(setO);listUsers().then(setU)};useEffect(load,[]);
  const set=k=>e=>setF({...f,[k]:e.target.value});
- async function pic(e){const file=e.target.files[0];if(!file)return;setBusy(true);try{setF({...f,image:await uploadImage(file)})}catch{toast('Upload failed. Paste an image URL instead.')}setBusy(false)}
- async function save(){if(!f.name||!f.price)return toast('Name and price required');setBusy(true);
-  try{await addWatch({...f,price:Number(f.price)});setF(blank);toast('Watch added');load()}catch{toast('Could not save')}setBusy(false)}
- const act=fn=>async o=>{try{await fn(o);toast('Done');load()}catch{toast('Failed')}};
- return <><div className="box"><h2>Add watch</h2>
-  {['name','brand','color','strap'].map(k=><input key={k} placeholder={k[0].toUpperCase()+k.slice(1)} value={f[k]} onChange={set(k)}/>)}
-  <input placeholder="Price (₦)" type="number" value={f.price} onChange={set('price')}/>
-  <input type="file" accept="image/*" onChange={pic}/><input placeholder="…or image URL" value={f.image} onChange={set('image')}/>
-  <label><input type="checkbox" checked={f.inStock} onChange={e=>setF({...f,inStock:e.target.checked})}/> In stock</label>
-  <button disabled={busy} onClick={save}>Add watch</button></div>
-  <div className="box"><h2>Watches</h2>{w.map(x=><div className="row" key={x.id}><span>{x.name} · {naira(x.price)}</span><span>
-   <a href="#" onClick={e=>{e.preventDefault();updateWatch(x.id,{inStock:!x.inStock}).then(load)}}>{x.inStock?'Mark sold out':'Restock'}</a>{' | '}
-   <a href="#" onClick={e=>{e.preventDefault();window.confirm('Delete?')&&deleteWatch(x.id).then(load)}}>Delete</a></span></div>)}</div>
-  <div className="box"><h2>Orders</h2>{o.map(x=><div className="row" key={x.id}><span>#{x.id.slice(0,8).toUpperCase()} · {x.customer}<br/><small>{x.items.map(i=>`${i.name} (${i.color}, ${i.strap}) x${i.qty}`).join('; ')}</small></span>
-   <span>{naira(x.total)} · {x.status}{x.status==='pending'&&<><br/><a href="#" onClick={e=>{e.preventDefault();window.confirm('Confirm payment received?')&&act(markPaid)(x)}}>Mark paid</a>{' | '}<a href="#" onClick={e=>{e.preventDefault();act(cancelOrder)(x)}}>Cancel</a></>}</span></div>)}</div></>;}
+ const setCol=(i,p)=>setF(s=>({...s,colors:s.colors.map((c,n)=>n===i?{...c,...p}:c)}));
+ async function up(i,files){setBusy(true);try{const urls=await Promise.all([...files].map(uploadImage));setF(s=>({...s,colors:s.colors.map((c,n)=>n===i?{...c,images:[...c.images,...urls]}:c)}))}catch{toast('Upload failed')}setBusy(false)}
+ const reset=()=>{setF(blank());setEid(null)};
+ function edit(x){setEid(x.id);setF({name:x.name||'',brand:x.brand||'',strap:x.strap||'',price:String(x.price||''),description:x.description||'',inStock:!!x.inStock,colors:colorsOf(x).map(c=>({name:c.name,images:[...(c.images||[])]}))});setTab('Watches');scrollTo(0,0)}
+ async function save(){
+  const colors=f.colors.filter(c=>c.name.trim());
+  if(!f.name||!f.price||!colors.length)return toast('Name, price and at least one colour are required');
+  setBusy(true);const d={name:f.name,brand:f.brand,strap:f.strap,description:f.description,inStock:f.inStock,price:Number(f.price),colors};
+  try{eid?await updateWatch(eid,d):await addWatch(d);toast(eid?'Watch updated':'Watch added');reset();load()}catch{toast('Could not save')}setBusy(false)}
+ const run=async(fn,m)=>{try{await fn();toast(m);load()}catch{toast('Failed')}};
+ const act={paid:x=>run(()=>markPaid(x),'Marked paid'),cancel:x=>run(()=>cancelOrder(x),'Cancelled')};
+ const emails=u.map(x=>x.email).filter(Boolean),paid=o.filter(x=>x.status==='paid');
+ async function send(){
+  if(!mail.subject||!mail.message)return toast('Add a subject and message');
+  if(!window.confirm(`Send this to ${emails.length} customers?`))return;
+  setBusy(true);
+  try{const t=await auth.currentUser.getIdToken(),r=await fetch('/api/send-promo',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify(mail)}),j=await r.json();if(!r.ok)throw new Error(j.error);toast(`Sent to ${j.sent} customers`);setMail({subject:'',message:''})}catch(e){toast(e.message||'Could not send')}
+  setBusy(false)}
+ return <div className="adm"><h1 className="title">Dashboard</h1>
+  <div className="chips" role="tablist">{TABS.map(t=><button key={t} className={t===tab?'on':''} onClick={()=>setTab(t)}>{t}</button>)}</div>
+  {tab==='Overview'&&<><div className="stats"><div className="stat g"><span>Revenue</span><b>{naira(paid.reduce((s,x)=>s+x.total,0))}</b></div><div className="stat"><span>Paid orders</span><b>{paid.length}</b></div><div className="stat"><span>Awaiting payment</span><b>{o.filter(x=>x.status==='pending').length}</b></div><div className="stat"><span>Customers</span><b>{u.length}</b></div><div className="stat"><span>Watches</span><b>{w.length}</b></div></div>
+   <div className="panel"><h2>Recent orders</h2>{!o.length&&<p className="muted">No orders yet.</p>}{o.slice(0,5).map(x=><OrderRow key={x.id} x={x}/>)}</div></>}
+  {tab==='Watches'&&<><div className="panel"><h2>{eid?'Edit watch':'Add a watch'}</h2>
+   <div className="fgrid"><input placeholder="Name" value={f.name} onChange={set('name')}/><input placeholder="Brand" value={f.brand} onChange={set('brand')}/><input placeholder="Strap" value={f.strap} onChange={set('strap')}/><input placeholder="Price (₦)" type="number" value={f.price} onChange={set('price')}/></div>
+   <textarea placeholder="Description" rows="3" value={f.description} onChange={set('description')}/>
+   <h3>Colours</h3>{f.colors.map((c,i)=><div className="colrow" key={i}><div className="fgrid"><input placeholder="Colour name (e.g. Black)" value={c.name} onChange={e=>setCol(i,{name:e.target.value})}/><input type="file" accept="image/*" multiple onChange={e=>up(i,e.target.files)}/></div>
+    <div className="thumbs">{c.images.map((s,n)=><span className="tw" key={s}><img src={s} alt=""/><a href="#" aria-label="Remove image" onClick={e=>{e.preventDefault();setCol(i,{images:c.images.filter((_,k)=>k!==n)})}}>✕</a></span>)}</div>
+    {f.colors.length>1&&<a href="#" onClick={e=>{e.preventDefault();setF({...f,colors:f.colors.filter((_,k)=>k!==i)})}}>Remove this colour</a>}</div>)}
+   <button className="pill ghost" onClick={()=>setF({...f,colors:[...f.colors,{name:'',images:[]}]})}>+ Add another colour</button>
+   <label><input type="checkbox" checked={f.inStock} onChange={e=>setF({...f,inStock:e.target.checked})}/> In stock</label>
+   <div className="ctas left"><button className="pill" disabled={busy} onClick={save}>{busy?'Please wait…':eid?'Save changes':'Add watch'}</button>{eid&&<button className="pill ghost" onClick={reset}>Cancel edit</button>}</div></div>
+   <div className="panel"><h2>All watches ({w.length})</h2>{w.map(x=><div className="arow" key={x.id}><Thumb s={cover(x)}/><div className="grow"><b>{x.name}</b><p className="muted">{x.brand} · {colorsOf(x).map(c=>c.name).join(', ')} · {naira(x.price)}</p></div>
+    <a href="#" onClick={e=>{e.preventDefault();edit(x)}}>Edit</a><a href="#" onClick={e=>{e.preventDefault();run(()=>updateWatch(x.id,{inStock:!x.inStock}),'Updated')}}>{x.inStock?'Mark sold out':'Restock'}</a><a href="#" onClick={e=>{e.preventDefault();window.confirm('Delete this watch?')&&run(()=>deleteWatch(x.id),'Deleted')}}>Delete</a></div>)}</div></>}
+  {tab==='Orders'&&<div className="panel"><h2>Orders ({o.length})</h2>{!o.length&&<p className="muted">No orders yet.</p>}{o.map(x=><OrderRow key={x.id} x={x} act={act}/>)}</div>}
+  {tab==='Customers'&&<><div className="panel"><h2>Send a promotion</h2><p className="muted">Goes to all {emails.length} registered customers.</p>
+   <input placeholder="Subject" value={mail.subject} onChange={e=>setMail({...mail,subject:e.target.value})}/><textarea rows="6" placeholder="Your message" value={mail.message} onChange={e=>setMail({...mail,message:e.target.value})}/>
+   <div className="ctas left"><button className="pill" disabled={busy||!emails.length} onClick={send}>{busy?'Sending…':`Send to ${emails.length} customers`}</button><button className="pill ghost" onClick={()=>navigator.clipboard.writeText(emails.join(', ')).then(()=>toast('Emails copied'))}>Copy all emails</button></div></div>
+   <div className="panel"><h2>Customers ({u.length})</h2>{u.map(x=><div className="arow" key={x.id}><div className="grow"><b>{x.name}</b><p className="muted">{x.email}</p></div><span>{naira(x.credits)} credits</span></div>)}</div></>}
+ </div>;}

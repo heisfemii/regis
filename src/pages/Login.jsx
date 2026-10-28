@@ -9,4 +9,5 @@ export default function Login(){
   {mode==='signup'&&<input placeholder="Full name" value={f.name} onChange={set('name')}/>}
   <input placeholder="Email" type="email" value={f.email} onChange={set('email')}/><input placeholder="Password" type="password" value={f.pw} onChange={set('pw')}/>
   <button disabled={busy} onClick={()=>run(()=>mode==='login'?login(f.email,f.pw):signup(f.name,f.email,f.pw))}>{mode==='login'?'Log in':'Create account'}</button>
+  {mode==='signup'&&<p className="muted">By signing up you agree to receive occasional offers from Regis. Unsubscribe anytime.</p>}
   <p className="muted"><a href="#" onClick={e=>{e.preventDefault();setMode(mode==='login'?'signup':'login')}}>{mode==='login'?'New here? Create an account':'Have an account? Log in'}</a></p></div>;}
