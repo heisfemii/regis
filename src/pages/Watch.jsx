@@ -9,7 +9,7 @@ export default function Watch(){
  if(err)return <div className="center"><p>{err}</p><button className="pill" onClick={load}>Try again</button></div>;
  if(w===undefined)return <div className="detail"><div className="gal"><div className="main skel"/></div><div/></div>;
  if(!w)return <div className="center"><h2>Watch not found.</h2><Link className="tlink" to="/">Back to shop ›</Link></div>;
- const cols=colorsOf(w),col=cols[ci],imgs=col.images||[];
+ const cols=colorsOf(w),col=cols[ci],imgs=col.images?.length?col.images:(w.demo?[w.demo]:[]);
  return <div className="detail"><div className="gal"><div className="main">{imgs[pi]?<img key={imgs[pi]} src={imgs[pi]} alt={`${w.name} in ${col.name}`}/>:<span aria-hidden="true">⌚</span>}</div>
   {imgs.length>1&&<div className="thumbs">{imgs.map((s,i)=><button key={s} className={i===pi?'on':''} onClick={()=>setPi(i)} aria-label={`View image ${i+1}`}><img src={s} alt=""/></button>)}</div>}</div>
   <div className="info"><p className="eyebrow">{w.brand}</p><h1>{w.name}</h1><p className="price big">{naira(w.price)}</p>

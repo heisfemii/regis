@@ -112,3 +112,5 @@ body.scrolled .top{box-shadow:0 1px 24px #0000000f}
 .cbar{height:8px;background:#ebe9e2;border-radius:99px;overflow:hidden;margin-top:8px}.cbar i{display:block;height:100%;width:0;background:var(--g);border-radius:99px;transition:width 1.6s var(--ease) .5s}.rv.in .cbar i{width:68%}
 
 .feat h3{white-space:pre-line}
+
+.card .im{aspect-ratio:4/5}

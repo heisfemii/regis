@@ -2,7 +2,7 @@ import {useEffect,useState} from 'react';
 import {listWatches,addWatch,updateWatch,deleteWatch,uploadImage,colorsOf,cover} from '../services/watches';
 import {allOrders,listUsers,listAdminIds,confirmOrder,setStage,stageOf,cancelOrder} from '../services/orders';import {LABEL} from '../components/Tracker';import {auth} from '../services/firebase';
 import {useToast} from '../context/ToastContext';import {naira,fmtDate} from '../services/config';import {msg} from '../services/errors';
-const blank=()=>({name:'',brand:'',strap:'',price:'',description:'',inStock:true,featured:false,colors:[{name:'',images:[]}]});
+const blank=()=>({name:'',brand:'',strap:'',price:'',description:'',inStock:true,featured:false,demo:'',colors:[{name:'',images:[]}]});
 const NEXT={packaging:['out_for_delivery','Mark out for delivery'],out_for_delivery:['delivered','Mark delivered']};
 const TABS=['Overview','Watches','Orders','Customers'];
 const Thumb=({s})=>s?<img className="thumb" src={s} alt=""/>:<div className="thumb"/>;
@@ -16,12 +16,13 @@ export default function Admin(){
  const set=k=>e=>setF({...f,[k]:e.target.value});
  const setCol=(i,p)=>setF(s=>({...s,colors:s.colors.map((c,n)=>n===i?{...c,...p}:c)}));
  async function up(i,files){setBusy(true);try{const urls=await Promise.all([...files].map(uploadImage));setF(s=>({...s,colors:s.colors.map((c,n)=>n===i?{...c,images:[...c.images,...urls]}:c)}))}catch(e){toast(msg(e,'We couldn’t upload that photo. Check your connection or try a smaller image.'))}setBusy(false)}
+ async function upDemo(file){if(!file)return;setBusy(true);try{const url=await uploadImage(file);setF(s=>({...s,demo:url}))}catch(e){toast(msg(e,'We couldn’t upload that photo. Check your connection or try a smaller image.'))}setBusy(false)}
  const reset=()=>{setF(blank());setEid(null)};
- function edit(x){setEid(x.id);setF({name:x.name||'',brand:x.brand||'',strap:x.strap||'',price:String(x.price||''),description:x.description||'',inStock:!!x.inStock,featured:!!x.featured,colors:colorsOf(x).map(c=>({name:c.name,images:[...(c.images||[])]}))});setTab('Watches');scrollTo(0,0)}
+ function edit(x){setEid(x.id);setF({name:x.name||'',brand:x.brand||'',strap:x.strap||'',price:String(x.price||''),description:x.description||'',inStock:!!x.inStock,featured:!!x.featured,demo:x.demo||'',colors:colorsOf(x).map(c=>({name:c.name,images:[...(c.images||[])]}))});setTab('Watches');scrollTo(0,0)}
  async function save(){
   const colors=f.colors.filter(c=>c.name.trim());
   if(!f.name||!f.price||!colors.length)return toast('Name, price and at least one colour are required');
-  setBusy(true);const d={name:f.name,brand:f.brand,strap:f.strap,description:f.description,inStock:f.inStock,featured:!!f.featured,price:Number(f.price),colors};
+  setBusy(true);const d={name:f.name,brand:f.brand,strap:f.strap,description:f.description,inStock:f.inStock,featured:!!f.featured,demo:f.demo||'',price:Number(f.price),colors};
   try{eid?await updateWatch(eid,d):await addWatch(d);toast(eid?'Watch updated':'Watch added');reset();load()}catch(e){toast(msg(e,'We couldn’t save the watch. Please try again.'))}setBusy(false)}
  const run=async(fn,m)=>{try{await fn();toast(m);load()}catch(e){toast(msg(e,'That didn’t work. Please try again.'))}};
  const doConfirm=async x=>{setBusy(true);try{const j=await confirmOrder(x);toast(j.emailed===false?'Payment confirmed. Email not sent: '+j.emailError:'Payment confirmed. Thank-you email sent');load()}catch(e){toast(e.message||'Failed')}setBusy(false)};
@@ -40,7 +41,9 @@ export default function Admin(){
   {tab==='Watches'&&<><div className="panel"><h2>{eid?'Edit watch':'Add a watch'}</h2>
    <div className="fgrid"><input placeholder="Name" value={f.name} onChange={set('name')}/><input placeholder="Brand" value={f.brand} onChange={set('brand')}/><input placeholder="Strap" value={f.strap} onChange={set('strap')}/><input placeholder="Price (₦)" type="number" value={f.price} onChange={set('price')}/></div>
    <textarea placeholder="Description" rows="3" value={f.description} onChange={set('description')}/>
-   <h3>Colours</h3>{f.colors.map((c,i)=><div className="colrow" key={i}><div className="fgrid"><input placeholder="Colour name (e.g. Black)" value={c.name} onChange={e=>setCol(i,{name:e.target.value})}/><input type="file" accept="image/*" multiple onChange={e=>up(i,e.target.files)}/></div>
+   <h3>Display image</h3><p className="muted">The clean studio shot shown on the shop and home page. Customers see the real photos below once they tap the watch.</p>
+   <div className="colrow"><input type="file" accept="image/*" onChange={e=>upDemo(e.target.files[0])}/>{f.demo&&<div className="thumbs"><span className="tw"><img src={f.demo} alt=""/><a href="#" aria-label="Remove display image" onClick={e=>{e.preventDefault();setF({...f,demo:''})}}>✕</a></span></div>}</div>
+   <h3>Colours and real photos</h3>{f.colors.map((c,i)=><div className="colrow" key={i}><div className="fgrid"><input placeholder="Colour name (e.g. Black)" value={c.name} onChange={e=>setCol(i,{name:e.target.value})}/><input type="file" accept="image/*" multiple onChange={e=>up(i,e.target.files)}/></div>
     <div className="thumbs">{c.images.map((s,n)=><span className="tw" key={s}><img src={s} alt=""/><a href="#" aria-label="Remove image" onClick={e=>{e.preventDefault();setCol(i,{images:c.images.filter((_,k)=>k!==n)})}}>✕</a></span>)}</div>
     {f.colors.length>1&&<a href="#" onClick={e=>{e.preventDefault();setF({...f,colors:f.colors.filter((_,k)=>k!==i)})}}>Remove this colour</a>}</div>)}
    <button className="pill ghost" onClick={()=>setF({...f,colors:[...f.colors,{name:'',images:[]}]})}>+ Add another colour</button>
