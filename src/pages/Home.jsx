@@ -1,7 +1,7 @@
 import {useEffect,useState} from 'react';import {Link} from 'react-router-dom';
 import {listWatches} from '../services/watches';import {useAuth} from '../context/AuthContext';import {naira,CREDIT_RATE} from '../services/config';
 import Reveal from '../components/Reveal';import Pic from '../components/Pic';import Split from '../components/Split';import CountUp from '../components/CountUp';import Icon from '../components/Icon';
-const FEATS=[['shield','Real brands, honestly sold.','Every watch is listed under its true brand name, with clear colours and details.'],['truck','Follow every step.','See your order move from processing to packaging to out for delivery, right in your account.'],['star','Credits that come back.','Earn credits on every order and spend them on your next one.']];
+const FEATS=[['shield','Known brands,\nhand picked.','Every watch is listed here, with clear colours and details.'],['truck','Follow every step.','See your order move from processing to packaging to out for delivery, right in your account.'],['star','Credits that come back.','Earn credits on every order and spend them on your next one.']];
 const STEPS=[['Pick','Choose a watch and your favourite colour.'],['Order','Send your order on WhatsApp and pay us directly.'],['Track','Follow packaging and delivery from your account, and earn credits.']];
 export default function Home(){
  const {user,profile}=useAuth(),[w,setW]=useState([]);

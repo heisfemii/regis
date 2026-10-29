@@ -110,3 +110,5 @@ body.scrolled .top{box-shadow:0 1px 24px #0000000f}
 .tile:hover .ccard{transform:translateY(-10px)}.chead{display:flex;justify-content:space-between;font-size:13px;color:var(--mut)}.chead em{font-style:normal;background:#ebe9e2;border-radius:99px;padding:0 10px;font-size:12px}
 .ccard b{font-size:44px;letter-spacing:-.03em;font-weight:600;color:var(--g);line-height:1.1}.ccard p{margin:4px 0 0;font-size:13px;color:var(--mut)}
 .cbar{height:8px;background:#ebe9e2;border-radius:99px;overflow:hidden;margin-top:8px}.cbar i{display:block;height:100%;width:0;background:var(--g);border-radius:99px;transition:width 1.6s var(--ease) .5s}.rv.in .cbar i{width:68%}
+
+.feat h3{white-space:pre-line}
