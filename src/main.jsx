@@ -1,3 +1,3 @@
 import React from 'react';import {createRoot} from 'react-dom/client';import {BrowserRouter} from 'react-router-dom';
-import App from './App';import AuthProvider from './context/AuthContext';import CartProvider from './context/CartContext';import ToastProvider from './context/ToastContext';import './index.css';
-createRoot(document.getElementById('root')).render(<BrowserRouter><ToastProvider><AuthProvider><CartProvider><App/></CartProvider></AuthProvider></ToastProvider></BrowserRouter>);
+import App from './App';import ErrorBoundary from './components/ErrorBoundary';import AuthProvider from './context/AuthContext';import CartProvider from './context/CartContext';import ToastProvider from './context/ToastContext';import './index.css';
+createRoot(document.getElementById('root')).render(<ErrorBoundary><BrowserRouter><ToastProvider><AuthProvider><CartProvider><App/></CartProvider></AuthProvider></ToastProvider></BrowserRouter></ErrorBoundary>);

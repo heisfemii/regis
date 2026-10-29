@@ -79,3 +79,17 @@ a.card{text-decoration:none;color:inherit}
 .trk li.done .d,.trk li.now .d,.trk li.done::before,.trk li.now::before{background:var(--g)}.trk li.now b,.trk li.done b{color:var(--ink)}
 .trk li.now .d{box-shadow:0 0 0 5px #4a523233;animation:ping 1.8s ease-in-out infinite}@keyframes ping{50%{box-shadow:0 0 0 10px #4a523212}}
 .hint{text-align:center;margin:8px 0 0}
+
+.err{background:#fdecea;color:#8a1c14;border-radius:12px;padding:12px 16px;font-size:14px;margin:0}
+.offline{position:sticky;top:0;z-index:60;background:var(--ink);color:var(--on);text-align:center;font-size:14px;padding:10px 16px;animation:slide .4s var(--ease)}@keyframes slide{from{transform:translateY(-100%)}}
+.nf{text-align:center;padding:96px 24px 120px}.nf h1{font-size:clamp(32px,5vw,56px);margin:16px 0 8px}.nf .lead{margin:0 auto 32px}
+.four{display:flex;justify-content:center;align-items:center;gap:8px;font:clamp(110px,24vw,260px)/1 Anton,sans-serif;color:var(--g)}.tick{font-size:.8em;display:inline-block;animation:tick 4s ease-in-out infinite}@keyframes tick{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(12deg) translateY(-10px)}}
+img.fadein{opacity:0}img.fadein,img.loaded{transition:opacity .6s var(--ease)}img.loaded{opacity:1}
+.skel{min-height:380px;background:linear-gradient(100deg,#fff 30%,#efede6 50%,#fff 70%);background-size:200% 100%;animation:shim 1.4s linear infinite;border-radius:28px}.main.skel{aspect-ratio:1}@keyframes shim{to{background-position:-200% 0}}
+.dot{animation:bump .45s var(--ease)}@keyframes bump{40%{transform:scale(1.6)}}
+.pill:active:not(:disabled),.box button:active:not(:disabled){transform:scale(.97)}.card:active{transform:scale(.99)}
+.mid a,.right>a{position:relative}.mid a::after{content:'';position:absolute;left:0;bottom:-4px;height:1px;width:100%;background:var(--g);transform:scaleX(0);transform-origin:left;transition:transform .4s var(--ease)}.mid a:hover::after{transform:scaleX(1)}
+.tile.g{background:linear-gradient(120deg,var(--g),#5b6540,var(--g));background-size:200% 200%;animation:glow 9s ease-in-out infinite}@keyframes glow{50%{background-position:100% 50%}}
+.qty{display:flex;align-items:center;gap:10px}.qty button{width:30px;height:30px;padding:0;border-radius:50%;background:#ebe9e2;color:var(--ink);font-size:16px;line-height:1}.qty button:hover:not(:disabled){background:#e0ddd3;transform:none}
+.gbtn{gap:12px}.gbtn svg{flex:none}
+.toast{max-width:min(92vw,520px);text-align:center}

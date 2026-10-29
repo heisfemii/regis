@@ -1,7 +1,7 @@
 import {useEffect,useState} from 'react';
 import {listWatches,addWatch,updateWatch,deleteWatch,uploadImage,colorsOf,cover} from '../services/watches';
 import {allOrders,listUsers,confirmOrder,setStage,stageOf,cancelOrder} from '../services/orders';import {LABEL} from '../components/Tracker';import {auth} from '../services/firebase';
-import {useToast} from '../context/ToastContext';import {naira,fmtDate} from '../services/config';
+import {useToast} from '../context/ToastContext';import {naira,fmtDate} from '../services/config';import {msg} from '../services/errors';
 const blank=()=>({name:'',brand:'',strap:'',price:'',description:'',inStock:true,colors:[{name:'',images:[]}]});
 const NEXT={packaging:['out_for_delivery','Mark out for delivery'],out_for_delivery:['delivered','Mark delivered']};
 const TABS=['Overview','Watches','Orders','Customers'];
@@ -15,15 +15,15 @@ export default function Admin(){
  const load=()=>{listWatches().then(setW);allOrders().then(setO);listUsers().then(setU)};useEffect(load,[]);
  const set=k=>e=>setF({...f,[k]:e.target.value});
  const setCol=(i,p)=>setF(s=>({...s,colors:s.colors.map((c,n)=>n===i?{...c,...p}:c)}));
- async function up(i,files){setBusy(true);try{const urls=await Promise.all([...files].map(uploadImage));setF(s=>({...s,colors:s.colors.map((c,n)=>n===i?{...c,images:[...c.images,...urls]}:c)}))}catch{toast('Upload failed')}setBusy(false)}
+ async function up(i,files){setBusy(true);try{const urls=await Promise.all([...files].map(uploadImage));setF(s=>({...s,colors:s.colors.map((c,n)=>n===i?{...c,images:[...c.images,...urls]}:c)}))}catch(e){toast(msg(e,'We couldn’t upload that photo. Check your connection or try a smaller image.'))}setBusy(false)}
  const reset=()=>{setF(blank());setEid(null)};
  function edit(x){setEid(x.id);setF({name:x.name||'',brand:x.brand||'',strap:x.strap||'',price:String(x.price||''),description:x.description||'',inStock:!!x.inStock,colors:colorsOf(x).map(c=>({name:c.name,images:[...(c.images||[])]}))});setTab('Watches');scrollTo(0,0)}
  async function save(){
   const colors=f.colors.filter(c=>c.name.trim());
   if(!f.name||!f.price||!colors.length)return toast('Name, price and at least one colour are required');
   setBusy(true);const d={name:f.name,brand:f.brand,strap:f.strap,description:f.description,inStock:f.inStock,price:Number(f.price),colors};
-  try{eid?await updateWatch(eid,d):await addWatch(d);toast(eid?'Watch updated':'Watch added');reset();load()}catch{toast('Could not save')}setBusy(false)}
- const run=async(fn,m)=>{try{await fn();toast(m);load()}catch{toast('Failed')}};
+  try{eid?await updateWatch(eid,d):await addWatch(d);toast(eid?'Watch updated':'Watch added');reset();load()}catch(e){toast(msg(e,'We couldn’t save the watch. Please try again.'))}setBusy(false)}
+ const run=async(fn,m)=>{try{await fn();toast(m);load()}catch(e){toast(msg(e,'That didn’t work. Please try again.'))}};
  const doConfirm=async x=>{setBusy(true);try{const j=await confirmOrder(x);toast(j.emailed===false?'Payment confirmed. Email not sent: '+j.emailError:'Payment confirmed. Thank-you email sent');load()}catch(e){toast(e.message||'Failed')}setBusy(false)};
  const act={busy,confirm:doConfirm,next:x=>run(()=>setStage(x,NEXT[stageOf(x)][0]),'Order updated'),cancel:x=>run(()=>cancelOrder(x),'Cancelled')};
  const emails=u.map(x=>x.email).filter(Boolean),paid=o.filter(x=>x.status==='paid');
