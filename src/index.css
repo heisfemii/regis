@@ -114,3 +114,12 @@ body.scrolled .top{box-shadow:0 1px 24px #0000000f}
 .feat h3{white-space:pre-line}
 
 .card .im{aspect-ratio:4/5}
+
+.loader{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;text-align:center;padding:24px;animation:lfade .4s ease .15s both}@keyframes lfade{from{opacity:0}}
+.wface{width:104px;height:104px;overflow:visible}.wface .rim{fill:none;stroke:var(--g);stroke-width:3;stroke-dasharray:277;stroke-dashoffset:277;animation:rimdraw 1.5s var(--ease) forwards}@keyframes rimdraw{to{stroke-dashoffset:0}}
+.wface .ticks{fill:none;stroke:var(--g);stroke-width:5;stroke-dasharray:1.4 17.45;opacity:.45;animation:lfade 1s ease .6s both}
+.wface line{stroke:var(--g);stroke-linecap:round;transform-origin:50px 50px}.wface .hh{stroke-width:4;animation:lspin 9s linear infinite}.wface .mh{stroke-width:3;animation:lspin 1.8s linear infinite}@keyframes lspin{to{transform:rotate(360deg)}}.wface .pin{fill:var(--g)}
+.lword{display:flex;font:46px/1 Anton,sans-serif;letter-spacing:.14em;color:var(--g)}.lword span{display:inline-block;animation:rise 1s var(--ease) var(--d) both,bob 2.2s ease-in-out calc(var(--d) + 1.2s) infinite}@keyframes bob{50%{transform:translateY(-7px);opacity:.7}}
+.lmsg{margin:0;color:var(--mut);font-size:17px;min-height:1.5em;animation:msgin .7s var(--ease) both}@keyframes msgin{from{opacity:0;transform:translateY(10px)}}
+.lbar{width:180px;height:3px;background:var(--line);border-radius:99px;overflow:hidden}.lbar i{display:block;height:100%;width:40%;background:var(--g);border-radius:99px;animation:lslide 1.5s ease-in-out infinite}@keyframes lslide{from{transform:translateX(-100%)}to{transform:translateX(260%)}}
+@media(prefers-reduced-motion:reduce){.wface .rim{stroke-dashoffset:0}}

@@ -1,11 +1,12 @@
 import {collection,getDocs,getDoc,addDoc,updateDoc,deleteDoc,doc,serverTimestamp,query,orderBy} from 'firebase/firestore';
 import {db} from './firebase';
 const m=d=>({id:d.id,...d.data()});
-export const listWatches=async()=>(await getDocs(query(collection(db,'watches'),orderBy('createdAt','desc')))).docs.map(m);
+let C=null;
+export const listWatches=async()=>C||(C=(await getDocs(query(collection(db,'watches'),orderBy('createdAt','desc')))).docs.map(m));
 export const getWatch=async id=>{const s=await getDoc(doc(db,'watches',id));return s.exists()?m(s):null};
-export const addWatch=w=>addDoc(collection(db,'watches'),{...w,createdAt:serverTimestamp()});
-export const updateWatch=(id,w)=>updateDoc(doc(db,'watches',id),w);
-export const deleteWatch=id=>deleteDoc(doc(db,'watches',id));
+export const addWatch=w=>addDoc(collection(db,'watches'),{...w,createdAt:serverTimestamp()}).then(r=>{C=null;return r});
+export const updateWatch=(id,w)=>updateDoc(doc(db,'watches',id),w).then(r=>{C=null;return r});
+export const deleteWatch=id=>deleteDoc(doc(db,'watches',id)).then(r=>{C=null;return r});
 export const colorsOf=w=>w.colors?.length?w.colors:[{name:w.color||'Standard',images:w.image?[w.image]:[]}];
 export const cover=w=>w.demo||colorsOf(w)[0].images?.[0]||'';
 export async function uploadImage(file){

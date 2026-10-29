@@ -1,12 +1,13 @@
 import {useEffect,useState} from 'react';import {Link} from 'react-router-dom';
-import {listWatches} from '../services/watches';import {useAuth} from '../context/AuthContext';import {naira,CREDIT_RATE} from '../services/config';
+import {listWatches,cover} from '../services/watches';import {preload} from '../services/preload';import Loader from '../components/Loader';import {useAuth} from '../context/AuthContext';import {naira,CREDIT_RATE} from '../services/config';
 import Reveal from '../components/Reveal';import Pic from '../components/Pic';import Split from '../components/Split';import CountUp from '../components/CountUp';import Icon from '../components/Icon';
 const FEATS=[['shield','Known brands,\nhand picked.','Every watch is listed here, with clear colours and details.'],['truck','Follow every step.','See your order move from processing to packaging to out for delivery, right in your account.'],['star','Credits that come back.','Earn credits on every order and spend them on your next one.']];
 const STEPS=[['Pick','Choose a watch and your favourite colour.'],['Order','Send your order on WhatsApp and pay us directly.'],['Track','Follow packaging and delivery from your account, and earn credits.']];
 export default function Home(){
- const {user,profile}=useAuth(),[w,setW]=useState([]);
- useEffect(()=>{listWatches().then(setW).catch(()=>{})},[]);
+ const {user,profile}=useAuth(),[w,setW]=useState([]),[ready,setReady]=useState(false);
+ useEffect(()=>{listWatches().then(async l=>{setW(l);await preload(['/hero-watch.png',...l.filter(x=>x.featured).slice(0,8).map(cover)])}).catch(()=>{}).finally(()=>setReady(true))},[]);
  const latest=w.filter(x=>x.featured).slice(0,8),brands=[...new Set(w.map(x=>x.brand).filter(Boolean))],row=Array(6).fill(brands).flat();
+ if(!ready)return <Loader/>;
  const st=n=>({'--d':n*120+'ms'});
  return <>
   <section className="hero">

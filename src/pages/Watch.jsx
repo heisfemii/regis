@@ -1,13 +1,13 @@
 import {useEffect,useState} from 'react';import {useParams,useNavigate,Link} from 'react-router-dom';
-import {getWatch,colorsOf} from '../services/watches';import {msg} from '../services/errors';import {useCart} from '../context/CartContext';import {useToast} from '../context/ToastContext';import {naira} from '../services/config';
+import {getWatch,colorsOf} from '../services/watches';import {preload} from '../services/preload';import Loader from '../components/Loader';import {msg} from '../services/errors';import {useCart} from '../context/CartContext';import {useToast} from '../context/ToastContext';import {naira} from '../services/config';
 export default function Watch(){
  const {id}=useParams(),nav=useNavigate(),{add}=useCart(),toast=useToast();
  const [w,setW]=useState(undefined),[ci,setCi]=useState(0),[pi,setPi]=useState(0);
  const [err,setErr]=useState('');
- const load=()=>{setErr('');setW(undefined);getWatch(id).then(setW).catch(e=>setErr(msg(e,'We couldn’t load this watch.')))};useEffect(load,[id]);
+ const load=()=>{setErr('');setW(undefined);getWatch(id).then(async x=>{if(x)await preload([x.demo,...colorsOf(x).flatMap(c=>c.images||[])]);setW(x)}).catch(e=>setErr(msg(e,'We couldn’t load this watch.')))};useEffect(load,[id]);
  useEffect(()=>{if(w)document.title=`${w.name} | Regis`;return()=>{document.title='Regis | Curated Watches'}},[w]);
  if(err)return <div className="center"><p>{err}</p><button className="pill" onClick={load}>Try again</button></div>;
- if(w===undefined)return <div className="detail"><div className="gal"><div className="main skel"/></div><div/></div>;
+ if(w===undefined)return <Loader/>;
  if(!w)return <div className="center"><h2>Watch not found.</h2><Link className="tlink" to="/">Back to shop ›</Link></div>;
  const cols=colorsOf(w),col=cols[ci],imgs=col.images?.length?col.images:(w.demo?[w.demo]:[]);
  return <div className="detail"><div className="gal"><div className="main">{imgs[pi]?<img key={imgs[pi]} src={imgs[pi]} alt={`${w.name} in ${col.name}`}/>:<span aria-hidden="true">⌚</span>}</div>

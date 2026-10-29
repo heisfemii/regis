@@ -2,6 +2,13 @@ import {createContext,useContext,useEffect,useRef,useState} from 'react';
 import {onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,updateProfile,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,sendPasswordResetEmail} from 'firebase/auth';
 import {doc,setDoc,getDoc,onSnapshot,serverTimestamp} from 'firebase/firestore';
 import {auth,db} from '../services/firebase';
+if(typeof window!=='undefined'){
+ const K='regis_left',nav=performance.getEntriesByType?.('navigation')?.[0]?.type,same=document.referrer.startsWith(window.location.origin);
+ if(sessionStorage.getItem(K)&&nav!=='reload'&&!same&&!sessionStorage.getItem('regis_redirect'))signOut(auth).catch(()=>{});
+ sessionStorage.removeItem(K);sessionStorage.removeItem('regis_redirect');
+ window.addEventListener('pagehide',()=>sessionStorage.setItem(K,'1'));
+ window.addEventListener('pageshow',e=>{if(e.persisted&&sessionStorage.getItem(K)){sessionStorage.removeItem(K);signOut(auth).catch(()=>{})}});
+}
 const C=createContext();export const useAuth=()=>useContext(C);
 export default function AuthProvider({children}){
  const [user,setUser]=useState(null),[profile,setProfile]=useState(null),[isAdmin,setAdmin]=useState(false),[loading,setLoading]=useState(true),signing=useRef(false);
@@ -21,6 +28,6 @@ export default function AuthProvider({children}){
   finally{signing.current=false}};
  const login=(e,p)=>signInWithEmailAndPassword(auth,e,p);
  const google=async()=>{const p=new GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});
-  try{await signInWithPopup(auth,p)}catch(e){if(e.code==='auth/popup-blocked'){await signInWithRedirect(auth,p);return}throw e}};
+  try{await signInWithPopup(auth,p)}catch(e){if(e.code==='auth/popup-blocked'){sessionStorage.setItem('regis_redirect','1');await signInWithRedirect(auth,p);return}throw e}};
  const reset=email=>sendPasswordResetEmail(auth,email);
  return <C.Provider value={{user,profile,isAdmin,loading,signup,login,google,reset,logout:()=>signOut(auth)}}>{children}</C.Provider>;}
