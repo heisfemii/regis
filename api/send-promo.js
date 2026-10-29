@@ -8,7 +8,8 @@ export default async function handler(req,res){
   const {uid}=await auth.verifyIdToken((req.headers.authorization||'').replace('Bearer ',''));
   if(!(await db.collection('admins').doc(uid).get()).exists)return res.status(403).json({error:'Admins only'});
   const {subject,message}=req.body||{};if(!subject||!message)return res.status(400).json({error:'Subject and message required'});
-  const people=(await db.collection('users').get()).docs.map(d=>d.data()).filter(p=>p.email&&p.marketing!==false);
+  const adminIds=new Set((await db.collection('admins').get()).docs.map(d=>d.id));
+  const people=(await db.collection('users').get()).docs.filter(d=>!adminIds.has(d.id)).map(d=>d.data()).filter(p=>p.email&&p.marketing!==false);
   const tr=nodemailer.createTransport({service:'gmail',pool:true,maxConnections:3,auth:{user:process.env.GMAIL_USER,pass:process.env.GMAIL_APP_PASSWORD}});
   const foot='\n\n--\nYou are receiving this because you have an account at Regis. Reply to this email to stop receiving promotions.';
   let sent=0,failed=0,last='';

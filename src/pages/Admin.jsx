@@ -1,6 +1,6 @@
 import {useEffect,useState} from 'react';
 import {listWatches,addWatch,updateWatch,deleteWatch,uploadImage,colorsOf,cover} from '../services/watches';
-import {allOrders,listUsers,confirmOrder,setStage,stageOf,cancelOrder} from '../services/orders';import {LABEL} from '../components/Tracker';import {auth} from '../services/firebase';
+import {allOrders,listUsers,listAdminIds,confirmOrder,setStage,stageOf,cancelOrder} from '../services/orders';import {LABEL} from '../components/Tracker';import {auth} from '../services/firebase';
 import {useToast} from '../context/ToastContext';import {naira,fmtDate} from '../services/config';import {msg} from '../services/errors';
 const blank=()=>({name:'',brand:'',strap:'',price:'',description:'',inStock:true,featured:false,colors:[{name:'',images:[]}]});
 const NEXT={packaging:['out_for_delivery','Mark out for delivery'],out_for_delivery:['delivered','Mark delivered']};
@@ -11,8 +11,8 @@ function OrderRow({x,act}){return <div className="orow"><div className="ohead"><
  {act&&x.status==='pending'&&<div className="ctas left"><button className="pill" disabled={act.busy} onClick={()=>window.confirm('Confirm payment received? The customer gets a thank-you email.')&&act.confirm(x)}>Confirm payment</button><button className="pill ghost" onClick={()=>act.cancel(x)}>Cancel</button></div>}
  {act&&x.status==='paid'&&NEXT[stageOf(x)]&&<div className="ctas left"><button className="pill" onClick={()=>act.next(x)}>{NEXT[stageOf(x)][1]}</button></div>}</div>}
 export default function Admin(){
- const toast=useToast(),[tab,setTab]=useState('Overview'),[w,setW]=useState([]),[o,setO]=useState([]),[u,setU]=useState([]),[f,setF]=useState(blank()),[eid,setEid]=useState(null),[busy,setBusy]=useState(false),[mail,setMail]=useState({subject:'',message:''});
- const load=()=>{listWatches().then(setW);allOrders().then(setO);listUsers().then(setU)};useEffect(load,[]);
+ const toast=useToast(),[tab,setTab]=useState('Overview'),[w,setW]=useState([]),[o,setO]=useState([]),[u,setU]=useState([]),[adm,setAdm]=useState([]),[f,setF]=useState(blank()),[eid,setEid]=useState(null),[busy,setBusy]=useState(false),[mail,setMail]=useState({subject:'',message:''});
+ const load=()=>{listWatches().then(setW);allOrders().then(setO);listUsers().then(setU);listAdminIds().then(setAdm).catch(()=>{})};useEffect(load,[]);
  const set=k=>e=>setF({...f,[k]:e.target.value});
  const setCol=(i,p)=>setF(s=>({...s,colors:s.colors.map((c,n)=>n===i?{...c,...p}:c)}));
  async function up(i,files){setBusy(true);try{const urls=await Promise.all([...files].map(uploadImage));setF(s=>({...s,colors:s.colors.map((c,n)=>n===i?{...c,images:[...c.images,...urls]}:c)}))}catch(e){toast(msg(e,'We couldn’t upload that photo. Check your connection or try a smaller image.'))}setBusy(false)}
@@ -26,7 +26,7 @@ export default function Admin(){
  const run=async(fn,m)=>{try{await fn();toast(m);load()}catch(e){toast(msg(e,'That didn’t work. Please try again.'))}};
  const doConfirm=async x=>{setBusy(true);try{const j=await confirmOrder(x);toast(j.emailed===false?'Payment confirmed. Email not sent: '+j.emailError:'Payment confirmed. Thank-you email sent');load()}catch(e){toast(e.message||'Failed')}setBusy(false)};
  const act={busy,confirm:doConfirm,next:x=>run(()=>setStage(x,NEXT[stageOf(x)][0]),'Order updated'),cancel:x=>run(()=>cancelOrder(x),'Cancelled')};
- const emails=u.map(x=>x.email).filter(Boolean),paid=o.filter(x=>x.status==='paid');
+ const cu=u.filter(x=>!adm.includes(x.id)),emails=cu.map(x=>x.email).filter(Boolean),paid=o.filter(x=>x.status==='paid');
  async function send(){
   if(!mail.subject||!mail.message)return toast('Add a subject and message');
   if(!window.confirm(`Send this to ${emails.length} customers?`))return;
@@ -35,7 +35,7 @@ export default function Admin(){
   setBusy(false)}
  return <div className="adm"><h1 className="title">Dashboard</h1>
   <div className="chips" role="tablist">{TABS.map(t=><button key={t} className={t===tab?'on':''} onClick={()=>setTab(t)}>{t}</button>)}</div>
-  {tab==='Overview'&&<><div className="stats"><div className="stat g"><span>Revenue</span><b>{naira(paid.reduce((s,x)=>s+x.total,0))}</b></div><div className="stat"><span>Paid orders</span><b>{paid.length}</b></div><div className="stat"><span>Awaiting payment</span><b>{o.filter(x=>x.status==='pending').length}</b></div><div className="stat"><span>Customers</span><b>{u.length}</b></div><div className="stat"><span>Watches</span><b>{w.length}</b></div></div>
+  {tab==='Overview'&&<><div className="stats"><div className="stat g"><span>Revenue</span><b>{naira(paid.reduce((s,x)=>s+x.total,0))}</b></div><div className="stat"><span>Paid orders</span><b>{paid.length}</b></div><div className="stat"><span>Awaiting payment</span><b>{o.filter(x=>x.status==='pending').length}</b></div><div className="stat"><span>Customers</span><b>{cu.length}</b></div><div className="stat"><span>Watches</span><b>{w.length}</b></div></div>
    <div className="panel"><h2>Recent orders</h2>{!o.length&&<p className="muted">No orders yet.</p>}{o.slice(0,5).map(x=><OrderRow key={x.id} x={x}/>)}</div></>}
   {tab==='Watches'&&<><div className="panel"><h2>{eid?'Edit watch':'Add a watch'}</h2>
    <div className="fgrid"><input placeholder="Name" value={f.name} onChange={set('name')}/><input placeholder="Brand" value={f.brand} onChange={set('brand')}/><input placeholder="Strap" value={f.strap} onChange={set('strap')}/><input placeholder="Price (₦)" type="number" value={f.price} onChange={set('price')}/></div>
@@ -53,5 +53,5 @@ export default function Admin(){
   {tab==='Customers'&&<><div className="panel"><h2>Send a promotion</h2><p className="muted">Goes to all {emails.length} registered customers.</p>
    <input placeholder="Subject" value={mail.subject} onChange={e=>setMail({...mail,subject:e.target.value})}/><textarea rows="6" placeholder="Your message" value={mail.message} onChange={e=>setMail({...mail,message:e.target.value})}/>
    <div className="ctas left"><button className="pill" disabled={busy||!emails.length} onClick={send}>{busy?'Sending…':`Send to ${emails.length} customers`}</button><button className="pill ghost" onClick={()=>navigator.clipboard.writeText(emails.join(', ')).then(()=>toast('Emails copied'))}>Copy all emails</button></div></div>
-   <div className="panel"><h2>Customers ({u.length})</h2>{u.map(x=><div className="arow" key={x.id}><div className="grow"><b>{x.name}</b><p className="muted">{x.email}</p></div><span>{naira(x.credits)} credits</span></div>)}</div></>}
+   <div className="panel"><h2>Customers ({cu.length})</h2>{cu.map(x=><div className="arow" key={x.id}><div className="grow"><b>{x.name}</b><p className="muted">{x.email}</p></div><span>{naira(x.credits)} credits</span></div>)}</div></>}
  </div>;}

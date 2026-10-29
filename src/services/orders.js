@@ -18,5 +18,6 @@ export const setStage=(o,stage)=>updateDoc(doc(db,'orders',o.id),{stage,stageUpd
 export const getOrder=async id=>{const s=await getDoc(doc(db,'orders',id));return s.exists()?m(s):null};
 export const myOrders=async uid=>(await getDocs(query(collection(db,'orders'),where('uid','==',uid)))).docs.map(m).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
 export const allOrders=async()=>(await getDocs(query(collection(db,'orders'),orderBy('createdAt','desc')))).docs.map(m);
+export const listAdminIds=async()=>(await getDocs(collection(db,'admins'))).docs.map(d=>d.id);
 export const listUsers=async()=>(await getDocs(collection(db,'users'))).docs.map(m);
 export async function cancelOrder(o){const b=writeBatch(db);b.update(doc(db,'orders',o.id),{status:'cancelled'});await b.commit();}
