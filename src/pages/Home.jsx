@@ -25,7 +25,7 @@ export default function Home(){
    <h2>{user?'Welcome back.':'Shop. Earn. Repeat.'}</h2>
    <p>{user?`You have ${naira(profile?.credits)} in credits to spend.`:'Every order earns credits you can spend on the next one.'}</p>
    <Link className="tlink" to={user?'/shop':'/login'}>{user?'Start shopping ›':'Create your account ›'}</Link>
-   <div className="ccard"><div className="chead"><span>Regis credits</span>{!user&&<em>Example</em>}</div><b><CountUp to={user?(profile?.credits||0):1300}/></b><div className="bar"><i/></div><p>{user?'Applied at checkout, just tick the box.':`Earn ${CREDIT_RATE*100}% back on every order.`}</p></div>
+   <div className="ccard"><div className="chead"><span>Regis credits</span>{!user&&<em>Example</em>}</div><b><CountUp to={user?(profile?.credits||0):1300}/></b><div className="cbar"><i/></div><p>{user?'Applied at checkout, just tick the box.':`Earn ${CREDIT_RATE*100}% back on every order.`}</p></div>
   </div></Reveal></section>
   <section id="how" className="sec"><div className="wrap"><Reveal><h2 className="title">How it works.</h2></Reveal>
    <div className="three">{STEPS.map(([t,d],i)=><Reveal key={t} delay={i*100}><div className="step"><span className="num">{i+1}</span><h3>{t}</h3><p className="muted">{d}</p></div></Reveal>)}</div></div></section>
