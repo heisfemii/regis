@@ -1,0 +1,20 @@
+/* nav: bigger logo, green Log in button */
+body .top .bar{height:64px}
+body .top .logo{font-size:30px;font-weight:800;letter-spacing:.2em;line-height:1}
+body .right a[href="/login"]{background:var(--g);color:var(--on);padding:9px 20px;border-radius:980px;font-size:14px;font-weight:500;opacity:1;transition:background .25s,transform .25s var(--ease)}
+body .right a[href="/login"]:hover{background:var(--gd);transform:scale(1.03)}
+body #latest,body #how{scroll-margin-top:72px}
+body .hero{padding-bottom:32px}
+/* phones: stop cart rows, order cards and the order tracker from overlapping */
+@media(max-width:734px){body .top .bar{height:56px;padding:0 16px}body .top .logo{font-size:24px;letter-spacing:.16em}}
+@media(max-width:560px){
+ body .box{padding:26px 20px;margin:32px auto}
+ body .panel{padding:22px 18px}
+ body .orow{padding:14px}
+ body .arow{flex-wrap:wrap;row-gap:10px;align-items:flex-start}
+ body .arow .grow{flex:1 1 calc(100% - 76px);min-width:0;overflow-wrap:anywhere}
+ body .arow>.grow+*{margin-left:72px}
+ body .arow>.grow~:last-child{margin-left:auto}
+ body .arow>.grow~*{align-self:center}
+ body .trk li{min-width:0;font-size:11px}
+ body .trk b{max-width:100%;overflow-wrap:anywhere}}

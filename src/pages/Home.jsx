@@ -1,24 +1,21 @@
 import {useEffect,useState} from 'react';import {Link} from 'react-router-dom';
 import {listWatches,cached} from '../services/watches';import {useAuth} from '../context/AuthContext';import {naira,CREDIT_RATE} from '../services/config';
-import Reveal from '../components/Reveal';import Pic from '../components/Pic';import Split from '../components/Split';import CountUp from '../components/CountUp';import Icon from '../components/Icon';
+import Reveal from '../components/Reveal';import Grimoire from '../components/Grimoire';import '../fixes.css';import Split from '../components/Split';import CountUp from '../components/CountUp';import Icon from '../components/Icon';
 const FEATS=[['shield','Known brands,\nhand picked.','Every watch is listed here, with clear colours and details.'],['truck','Follow every step.','See your order move from processing to packaging to out for delivery, right in your account.'],['star','Credits that come back.','Earn credits on every order and spend them on your next one.']];
 const STEPS=[['Pick','Choose a watch and your favourite colour.'],['Order','Send your order on WhatsApp and pay us directly.'],['Track','Follow packaging and delivery from your account, and earn credits.']];
 export default function Home(){
  const {user,profile}=useAuth(),[w,setW]=useState(cached()||[]);
  useEffect(()=>{listWatches().then(setW).catch(()=>{})},[]);
- const latest=w.filter(x=>x.featured).slice(0,8),brands=[...new Set(w.map(x=>x.brand).filter(Boolean))],row=Array(6).fill(brands).flat();
+ const latest=w.filter(x=>x.featured).slice(0,8);
  const st=n=>({'--d':n*120+'ms'});
  return <>
   <section className="hero">
    <h1><Split text="Known brands."/><br/><Split text="Carefully sourced." base={250}/></h1>
    <p className="sub st" style={st(4)}>Affordable. Curated. Yours.</p>
    <div className="ctas st" style={st(5)}><Link className="pill" to="/shop">Shop now</Link><a className="tlink" href="#how">Learn more ›</a></div>
-   <div className="stage" aria-hidden="true"><div className="word">{'REGIS'.split('').map((l,i)=><span key={i} style={{animationDelay:600+i*110+'ms'}}>{l}</span>)}</div>
-    <img className="heroimg" src="/hero-watch.png" alt="" onError={e=>e.target.remove()}/></div>
   </section>
-  {brands.length>0&&<div className="marq" aria-hidden="true"><div>{[...row,...row].map((b,i)=><span key={i}>{b}<i>✦</i></span>)}</div></div>}
   {latest.length>0&&<section id="latest" className="sec" style={{paddingBottom:40}}><div className="wrap"><Reveal><h2 className="title">The latest.</h2><p className="lead">Take a look at what’s new.</p></Reveal></div>
-   <div className="rail">{latest.map(x=><Link key={x.id} to={'/watch/'+x.id} className="rcard"><span className="eyebrow">{x.brand||'New'}</span><h3>{x.name}</h3><p className="muted">From {naira(x.price)}</p><Pic w={x}/><span className="tlink">Buy ›</span></Link>)}</div></section>}
+   <div className="wrap"><Reveal><Grimoire items={latest}/></Reveal></div></section>}
   <section className="sec"><div className="wrap"><Reveal><h2 className="title">Why Regis?</h2></Reveal>
    <div className="three">{FEATS.map(([i,t,d],n)=><Reveal key={t} delay={n*100}><div className="feat"><Icon n={i}/><h3>{t}</h3><p className="muted">{d}</p></div></Reveal>)}</div></div></section>
   <section className="tiles one"><Reveal className="wide"><div className="tile g">

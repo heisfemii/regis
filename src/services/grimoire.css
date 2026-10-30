@@ -1,0 +1,41 @@
+.gstage{--pw:240px;--ph:350px;position:relative;max-width:1100px;height:580px;margin:0 auto;border-radius:28px;overflow:hidden;isolation:isolate;color:#f6e7d0;background:radial-gradient(ellipse 62% 55% at 50% 48%,#6b3513 0%,#2d170b 44%,#120906 82%);box-shadow:0 30px 80px #2d170b55}
+.gstage::before{content:'';position:absolute;left:50%;bottom:6%;width:min(520px,80%);height:64px;transform:translateX(-50%);background:radial-gradient(ellipse,#ff8a3d66,transparent 70%);filter:blur(14px);pointer-events:none}
+.gscene{position:absolute;inset:0;perspective:1500px;perspective-origin:50% 38%;touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none;z-index:1}
+.gscene:active{cursor:grabbing}
+.gbook{position:absolute;left:50%;top:50%;width:0;height:0;transform-style:preserve-3d;transform:translateY(-8px) rotateX(-9deg) rotateY(var(--r,0deg))}
+.gspine{position:absolute;left:-7px;top:calc(var(--ph)/-2 - 16px);width:14px;height:calc(var(--ph) + 32px);border-radius:7px;background:linear-gradient(90deg,#050302,#3a2a20 45%,#050302);box-shadow:0 0 18px #000a}
+.gspine.b{transform:rotateY(90deg)}
+.gcord{position:absolute;left:-1px;top:calc(var(--ph)/-2 - 90px);width:3px;height:90px;background:linear-gradient(#ff5470,#d4122f);box-shadow:0 0 10px #ff2a4a}
+.gcord.b{transform:rotateY(90deg)}
+.gpage{position:absolute;left:0;top:calc(var(--ph)/-2);width:var(--pw);height:var(--ph);cursor:pointer;outline:none;transform-style:preserve-3d;transform-origin:0 50%;
+ transform:rotateY(0deg) translateX(12px) translateZ(calc(var(--i)*-1px));transition:transform 1.5s var(--ease) calc(var(--i)*90ms),opacity .35s}
+.gstage.open .gpage{transform:rotateY(var(--a)) translateX(12px) translateZ(calc(var(--i)*-1px))}
+.gpage:focus-visible .gface{box-shadow:inset 0 0 0 3px #ff9a4a}
+.gface{position:absolute;inset:0;display:flex;flex-direction:column;gap:6px;padding:14px;border-radius:6px 16px 16px 6px;overflow:hidden;color:#3b2412;background:linear-gradient(180deg,#f8ead4,#ecd3ae);box-shadow:inset 0 0 0 1px #b6804a40,0 0 26px #ff8a3d33;backface-visibility:hidden;-webkit-backface-visibility:hidden;text-align:left}
+.gface.b{transform:rotateY(180deg)}
+.gface::before,.gcard::before{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,#ff7a1fa6 0%,#ff9a4a45 24%,#ff9a4a00 62%)}
+.gface.b::before{background:linear-gradient(270deg,#ff7a1fa6 0%,#ff9a4a45 24%,#ff9a4a00 62%)}
+.gface .eyebrow,.gcard .eyebrow{position:relative;color:#9a4f1c;font-size:11px}
+.gname{position:relative;font-size:15px;line-height:1.2;font-weight:600;min-height:36px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.gface .im,.gcard .im{position:relative;flex:1;min-height:0;aspect-ratio:auto;margin:0;border-radius:12px;background:#e8d5bb}
+.gface img,.gcard img{-webkit-user-drag:none;pointer-events:none}
+.gprice{position:relative;font-size:13px;font-weight:600}
+.gscene{transition:opacity .5s}.gstage.focus .gscene{opacity:.22}
+.gstage.focus .gpage{pointer-events:none}.gstage.focus .gpage.gone{opacity:0}
+.ghint{position:absolute;left:0;right:0;bottom:16px;margin:0;text-align:center;font-size:13px;color:#f6e7d0aa;z-index:2;pointer-events:none;transition:opacity .4s}
+.gstage.focus .ghint{opacity:0}
+.gover{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:22px 16px 20px}
+.gfocus{width:min(300px,76%);height:min(420px,calc(100% - 120px))}
+.gcard{position:relative;height:100%;display:flex;flex-direction:column;gap:8px;padding:18px;border-radius:22px;overflow:hidden;color:#3b2412;background:linear-gradient(180deg,#f8ead4,#ecd3ae);box-shadow:0 30px 80px #000b,0 0 70px #ff8a3d55}
+.gcard .gname{font-size:20px;min-height:48px}.gcard .gprice{font-size:16px}
+.gbtns{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.gbtns button,.gbtns a{border:0;border-radius:980px;padding:10px 20px;font:500 15px var(--f);cursor:pointer;text-decoration:none;color:#f6e7d0;background:#ffffff22;transition:background .25s}
+.gbtns button:hover{background:#ffffff38}
+.gbtns .gview{background:#f6e7d0;color:#2a150a}.gbtns .gview:hover{background:#fff}
+@media(max-width:560px){
+ .gstage{--pw:140px;--ph:212px;height:500px;border-radius:22px}
+ .gscene{perspective:1300px}
+ .gface{padding:10px;gap:4px}.gname{font-size:13px;min-height:32px}.gface .eyebrow{font-size:10px}.gprice{font-size:12px}
+ .gfocus{width:min(260px,78%);height:min(370px,calc(100% - 120px))}
+ .gcard{padding:14px}.gcard .gname{font-size:17px;min-height:42px}
+ .gbtns button,.gbtns a{padding:9px 15px;font-size:14px}}
