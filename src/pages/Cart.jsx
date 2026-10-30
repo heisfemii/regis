@@ -1,8 +1,8 @@
 import {useState} from 'react';import {useNavigate,Link} from 'react-router-dom';
 import {useCart} from '../context/CartContext';import {useAuth} from '../context/AuthContext';import {useToast} from '../context/ToastContext';
-import {createOrder,whatsappLink} from '../services/orders';import {getWatch} from '../services/watches';import {naira} from '../services/config';import {msg,withTimeout} from '../services/errors';
+import {createOrder,whatsappLink} from '../services/orders';import {getWatch} from '../services/watches';import {naira} from '../services/config';import {msg,withTimeout} from '../services/errors';import {useSettings} from '../context/SettingsContext';
 export default function Cart(){
- const {items,remove,clear,setQty,subtotal}=useCart(),{user,profile}=useAuth(),nav=useNavigate(),toast=useToast();
+ const {whatsapp}=useSettings(),{items,remove,clear,setQty,subtotal}=useCart(),{user,profile}=useAuth(),nav=useNavigate(),toast=useToast();
  const [use,setUse]=useState(false),[busy,setBusy]=useState(false);
  const avail=profile?.credits||0,applied=use?Math.min(avail,subtotal):0,total=subtotal-applied;
  if(!items.length)return <div className="center"><h2>Your cart is empty.</h2><p><Link className="tlink" to="/">Continue shopping ›</Link></p></div>;
@@ -16,7 +16,7 @@ export default function Cart(){
     toast(!f||!f.inStock?`${b.name} is no longer available, so we removed it from your cart.`:`The price of ${b.name} has changed, so we removed it. Please add it again to continue.`);return setBusy(false)}
    const ap=Math.min(applied,subtotal);
    const o=await withTimeout(createOrder(user,profile?.name||user.displayName||'Customer',items,ap));
-   clear();window.location.href=whatsappLink(o);
+   clear();window.location.href=whatsappLink(o,whatsapp);
   }catch(e){toast(msg(e,'We couldn’t place your order. Please try again.'));setBusy(false)}}
  return <div className="box wide"><h2>Your cart</h2>
   {items.map(i=><div className="arow" key={i.key}>{i.image?<img className="thumb" src={i.image} alt=""/>:<div className="thumb"/>}

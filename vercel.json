@@ -1,1 +1,1 @@
-{"rewrites":[{"source":"/((?!api/).*)","destination":"/index.html"}],"functions":{"api/send-promo.js":{"maxDuration":60}}}
+{"rewrites":[{"source":"/((?!api/).*)","destination":"/index.html"}],"functions":{"api/send-promo.js":{"maxDuration":60},"api/confirm-order.js":{"maxDuration":30,"includeFiles":"api/fonts/**"}}}

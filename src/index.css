@@ -127,3 +127,7 @@ body.scrolled .top{box-shadow:0 1px 24px #0000000f}
 @keyframes pg{from{opacity:0}}
 .backbar{padding-top:32px;padding-bottom:0}.back{font-size:17px}.detail{padding-top:16px}
 .dbg{max-width:760px;margin:24px auto 0;text-align:left;white-space:pre-wrap;font-size:12px;background:#ebe9e2;border-radius:12px;padding:16px;color:var(--mut)}
+
+.cookie{position:fixed;left:16px;right:16px;bottom:16px;max-width:460px;z-index:90;background:#fff;border-radius:20px;padding:16px 20px;box-shadow:0 10px 40px #0002;display:flex;gap:16px;align-items:center;animation:cin .7s var(--ease) 1s both}.cookie p{margin:0;font-size:14px;line-height:1.4}.cookie a{color:var(--g)}.cookie .pill{padding:9px 18px;font-size:15px;white-space:nowrap}@keyframes cin{from{opacity:0;transform:translateY(20px)}}
+.legal-page{max-width:760px;margin:0 auto;padding:72px 24px 120px}.legal-page h1{font-size:clamp(36px,6vw,60px);margin-bottom:8px}.legal-page h3{font-size:24px;margin:40px 0 8px}.legal-page p{line-height:1.7;margin:0 0 12px;font-size:17px}.legal-page .muted{font-size:14px}
+.panel select{height:44px;padding:0 14px;border:1px solid var(--line);border-radius:12px;font:16px var(--f);background:var(--card);color:var(--ink);width:100%}

@@ -6,11 +6,11 @@ export async function createOrder(user,name,items,creditsApplied){
  const o={uid:user.uid,customer:name,email:user.email,items:items.map(({id,name,brand,color,strap,price,qty,image})=>({id,name,brand,color,strap,price,qty,image})),subtotal,creditsApplied,total:subtotal-creditsApplied,status:'pending',stage:'processing',createdAt:serverTimestamp()};
  const ref=await addDoc(collection(db,'orders'),o);return {...o,id:ref.id};}
 export const stageOf=o=>o.stage||(o.status==='paid'?'packaging':'processing');
-export function whatsappLink(o){
+export function whatsappLink(o,number=WHATSAPP_NUMBER){
  const L=['*NEW ORDER* #'+o.id.slice(0,8).toUpperCase(),'Customer: '+o.customer,''];
  o.items.forEach((i,n)=>L.push(`${n+1}. ${i.name} (${i.brand})`,`   Color: ${i.color} | Strap: ${i.strap}`,`   Qty: ${i.qty} x ${naira(i.price)}`));
  L.push('',`Subtotal: ${naira(o.subtotal)}`);if(o.creditsApplied)L.push(`Credits applied: -${naira(o.creditsApplied)}`);L.push(`*Total: ${naira(o.total)}*`);
- return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(L.join('\n'))}`;}
+ return `https://wa.me/${number}?text=${encodeURIComponent(L.join('\n'))}`;}
 export async function confirmOrder(o){
  const t=await auth.currentUser.getIdToken(),r=await fetch('/api/confirm-order',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify({orderId:o.id})});
  const j=await r.json().catch(()=>({error:'Server error '+r.status}));if(!r.ok)throw new Error(j.error);return j;}
@@ -21,3 +21,4 @@ export const allOrders=async()=>(await getDocs(query(collection(db,'orders'),ord
 export const listAdminIds=async()=>(await getDocs(collection(db,'admins'))).docs.map(d=>d.id);
 export const listUsers=async()=>(await getDocs(collection(db,'users'))).docs.map(m);
 export async function cancelOrder(o){const b=writeBatch(db);b.update(doc(db,'orders',o.id),{status:'cancelled'});await b.commit();}
+export const setMarketing=(uid,val)=>updateDoc(doc(db,'users',uid),{marketing:val});

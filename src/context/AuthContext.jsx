@@ -9,6 +9,7 @@ try{if(typeof window!=='undefined'){
  window.addEventListener('pagehide',()=>sessionStorage.setItem(K,'1'));
  window.addEventListener('pageshow',e=>{if(e.persisted&&sessionStorage.getItem(K)){sessionStorage.removeItem(K);signOut(auth).catch(()=>{})}});
 }}catch{}
+const welcome=u=>{Promise.resolve().then(()=>u.getIdToken()).then(t=>fetch('/api/welcome',{method:'POST',headers:{Authorization:'Bearer '+t}})).catch(()=>{})};
 const C=createContext();export const useAuth=()=>useContext(C);
 export default function AuthProvider({children}){
  const [user,setUser]=useState(null),[profile,setProfile]=useState(null),[isAdmin,setAdmin]=useState(false),[loading,setLoading]=useState(true),signing=useRef(false);
@@ -17,14 +18,14 @@ export default function AuthProvider({children}){
   const off=onAuthStateChanged(auth,async u=>{unsub();setUser(u);
    if(!u){setProfile(null);setAdmin(false);setLoading(false);return;}
    const ref=doc(db,'users',u.uid);
-   if(!signing.current){try{if(!(await getDoc(ref)).exists())await setDoc(ref,{name:u.displayName||(u.email||'Friend').split('@')[0],email:u.email,credits:0,marketing:true,createdAt:serverTimestamp()})}catch{}}
+   if(!signing.current){try{if(!(await getDoc(ref)).exists()){await setDoc(ref,{name:u.displayName||(u.email||'Friend').split('@')[0],email:u.email,credits:0,marketing:true,createdAt:serverTimestamp()});welcome(u)}}catch{}}
    unsub=onSnapshot(ref,s=>setProfile(s.data()||null),()=>{});
    try{setAdmin((await getDoc(doc(db,'admins',u.uid))).exists())}catch{setAdmin(false)}
    setLoading(false);});
   return()=>{off();unsub();};},[]);
  const signup=async(name,email,pw)=>{signing.current=true;
   try{const {user:u}=await createUserWithEmailAndPassword(auth,email,pw);await updateProfile(u,{displayName:name});
-   await setDoc(doc(db,'users',u.uid),{name,email,credits:0,marketing:true,createdAt:serverTimestamp()});}
+   await setDoc(doc(db,'users',u.uid),{name,email,credits:0,marketing:true,createdAt:serverTimestamp()});welcome(u)}
   finally{signing.current=false}};
  const login=(e,p)=>signInWithEmailAndPassword(auth,e,p);
  const google=async()=>{const p=new GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});
