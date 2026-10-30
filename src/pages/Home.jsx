@@ -1,13 +1,12 @@
 import {useEffect,useState} from 'react';import {Link} from 'react-router-dom';
-import {listWatches,cover} from '../services/watches';import {preload} from '../services/preload';import Loader from '../components/Loader';import {useAuth} from '../context/AuthContext';import {naira,CREDIT_RATE} from '../services/config';
+import {listWatches,cached} from '../services/watches';import {useAuth} from '../context/AuthContext';import {naira,CREDIT_RATE} from '../services/config';
 import Reveal from '../components/Reveal';import Pic from '../components/Pic';import Split from '../components/Split';import CountUp from '../components/CountUp';import Icon from '../components/Icon';
 const FEATS=[['shield','Known brands,\nhand picked.','Every watch is listed here, with clear colours and details.'],['truck','Follow every step.','See your order move from processing to packaging to out for delivery, right in your account.'],['star','Credits that come back.','Earn credits on every order and spend them on your next one.']];
 const STEPS=[['Pick','Choose a watch and your favourite colour.'],['Order','Send your order on WhatsApp and pay us directly.'],['Track','Follow packaging and delivery from your account, and earn credits.']];
 export default function Home(){
- const {user,profile}=useAuth(),[w,setW]=useState([]),[ready,setReady]=useState(false);
- useEffect(()=>{listWatches().then(async l=>{setW(l);await preload(['/hero-watch.png',...l.filter(x=>x.featured).slice(0,8).map(cover)])}).catch(()=>{}).finally(()=>setReady(true))},[]);
+ const {user,profile}=useAuth(),[w,setW]=useState(cached()||[]);
+ useEffect(()=>{listWatches().then(setW).catch(()=>{})},[]);
  const latest=w.filter(x=>x.featured).slice(0,8),brands=[...new Set(w.map(x=>x.brand).filter(Boolean))],row=Array(6).fill(brands).flat();
- if(!ready)return <Loader/>;
  const st=n=>({'--d':n*120+'ms'});
  return <>
   <section className="hero">
@@ -20,7 +19,7 @@ export default function Home(){
   {brands.length>0&&<div className="marq" aria-hidden="true"><div>{[...row,...row].map((b,i)=><span key={i}>{b}<i>✦</i></span>)}</div></div>}
   {latest.length>0&&<section id="latest" className="sec" style={{paddingBottom:40}}><div className="wrap"><Reveal><h2 className="title">The latest.</h2><p className="lead">Take a look at what’s new.</p></Reveal></div>
    <div className="rail">{latest.map(x=><Link key={x.id} to={'/watch/'+x.id} className="rcard"><span className="eyebrow">{x.brand||'New'}</span><h3>{x.name}</h3><p className="muted">From {naira(x.price)}</p><Pic w={x}/><span className="tlink">Buy ›</span></Link>)}</div></section>}
-  <section className="sec"><div className="wrap"><Reveal><h2 className="title">Why Regis.</h2></Reveal>
+  <section className="sec"><div className="wrap"><Reveal><h2 className="title">Why Regis?</h2></Reveal>
    <div className="three">{FEATS.map(([i,t,d],n)=><Reveal key={t} delay={n*100}><div className="feat"><Icon n={i}/><h3>{t}</h3><p className="muted">{d}</p></div></Reveal>)}</div></div></section>
   <section className="tiles one"><Reveal className="wide"><div className="tile g">
    <h2>{user?'Welcome back.':'Shop. Earn. Repeat.'}</h2>

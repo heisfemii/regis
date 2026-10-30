@@ -123,3 +123,7 @@ body.scrolled .top{box-shadow:0 1px 24px #0000000f}
 .lmsg{margin:0;color:var(--mut);font-size:17px;min-height:1.5em;animation:msgin .7s var(--ease) both}@keyframes msgin{from{opacity:0;transform:translateY(10px)}}
 .lbar{width:180px;height:3px;background:var(--line);border-radius:99px;overflow:hidden}.lbar i{display:block;height:100%;width:40%;background:var(--g);border-radius:99px;animation:lslide 1.5s ease-in-out infinite}@keyframes lslide{from{transform:translateX(-100%)}to{transform:translateX(260%)}}
 @media(prefers-reduced-motion:reduce){.wface .rim{stroke-dashoffset:0}}
+
+@keyframes pg{from{opacity:0}}
+.backbar{padding-top:32px;padding-bottom:0}.back{font-size:17px}.detail{padding-top:16px}
+.dbg{max-width:760px;margin:24px auto 0;text-align:left;white-space:pre-wrap;font-size:12px;background:#ebe9e2;border-radius:12px;padding:16px;color:var(--mut)}

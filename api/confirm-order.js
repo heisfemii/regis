@@ -1,4 +1,4 @@
-import {init} from './_admin.js';
+import {init} from './_admin.js';const fn=n=>{const f=(n||'').trim().split(/\s+/)[0]||'there';return f.length>1&&f===f.toUpperCase()?f[0]+f.slice(1).toLowerCase():f};
 const RATE=0.01,N=n=>'₦'+Number(n||0).toLocaleString('en-NG');
 export default async function handler(req,res){
  if(req.method!=='POST')return res.status(405).end();
@@ -20,7 +20,7 @@ export default async function handler(req,res){
   if(out.already)return res.json({ok:true,already:true});
   let emailed=true,emailError;
   try{
-   const nodemailer=(await import('nodemailer')).default,o=out.o,first=(o.customer||'there').split(' ')[0],site=process.env.SITE_URL||'https://regiswatch.vercel.app';
+   const nodemailer=(await import('nodemailer')).default,o=out.o,first=fn(o.customer),site=process.env.SITE_URL||'https://regiswatch.vercel.app';
    if(!process.env.GMAIL_USER||!process.env.GMAIL_APP_PASSWORD)throw new Error('GMAIL_USER or GMAIL_APP_PASSWORD is not set on the server');
    const tr=nodemailer.createTransport({service:'gmail',auth:{user:process.env.GMAIL_USER,pass:process.env.GMAIL_APP_PASSWORD}});
    const items=o.items.map(i=>`- ${i.name} (${i.color}) x${i.qty}`).join('\n');

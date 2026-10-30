@@ -1,8 +1,8 @@
-import {useEffect,useState} from 'react';import {Link} from 'react-router-dom';import {listWatches,colorsOf,cover} from '../services/watches';import {preload} from '../services/preload';import Loader from '../components/Loader';import {naira} from '../services/config';
+import {useEffect,useState} from 'react';import {Link} from 'react-router-dom';import {listWatches,colorsOf,cover,cached} from '../services/watches';import {preload} from '../services/preload';import Loader from '../components/Loader';import {naira} from '../services/config';
 import Reveal from '../components/Reveal';import Pic from '../components/Pic';import {msg} from '../services/errors';
 export default function Shop(){
- const [w,setW]=useState([]),[brand,setBrand]=useState('All'),[q,setQ]=useState(''),[busy,setBusy]=useState(true),[err,setErr]=useState('');
- const load=()=>{setBusy(true);setErr('');listWatches().then(async l=>{setW(l);await preload(l.map(cover))}).catch(e=>setErr(msg(e,'We couldn’t load the watches.'))).finally(()=>setBusy(false))};
+ const [w,setW]=useState(cached()||[]),[brand,setBrand]=useState('All'),[q,setQ]=useState(''),[busy,setBusy]=useState(!cached()),[err,setErr]=useState('');
+ const load=()=>{setBusy(!cached());setErr('');listWatches().then(async l=>{setW(l);await preload(l.map(cover))}).catch(e=>setErr(msg(e,'We couldn’t load the watches.'))).finally(()=>setBusy(false))};
  useEffect(()=>{load();document.title='Shop | Regis';return()=>{document.title='Regis | Curated Watches'}},[]);
  const brands=[...new Set(w.map(x=>x.brand).filter(Boolean))];
  const shown=w.filter(x=>(brand==='All'||x.brand===brand)&&`${x.name} ${x.brand}`.toLowerCase().includes(q.toLowerCase()));

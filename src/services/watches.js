@@ -1,7 +1,7 @@
 import {collection,getDocs,getDoc,addDoc,updateDoc,deleteDoc,doc,serverTimestamp,query,orderBy} from 'firebase/firestore';
 import {db} from './firebase';
 const m=d=>({id:d.id,...d.data()});
-let C=null;
+let C=null;export const cached=()=>C;
 export const listWatches=async()=>C||(C=(await getDocs(query(collection(db,'watches'),orderBy('createdAt','desc')))).docs.map(m));
 export const getWatch=async id=>{const s=await getDoc(doc(db,'watches',id));return s.exists()?m(s):null};
 export const addWatch=w=>addDoc(collection(db,'watches'),{...w,createdAt:serverTimestamp()}).then(r=>{C=null;return r});

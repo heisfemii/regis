@@ -1,4 +1,4 @@
-import {init} from './_admin.js';
+import {init} from './_admin.js';const fn=n=>{const f=(n||'').trim().split(/\s+/)[0]||'there';return f.length>1&&f===f.toUpperCase()?f[0]+f.slice(1).toLowerCase():f};
 export default async function handler(req,res){
  if(req.method!=='POST')return res.status(405).end();
  try{
@@ -14,7 +14,7 @@ export default async function handler(req,res){
   const foot='\n\n--\nYou are receiving this because you have an account at Regis. Reply to this email to stop receiving promotions.';
   let sent=0,failed=0,last='';
   for(let i=0;i<people.length;i+=5)await Promise.all(people.slice(i,i+5).map(async p=>{
-   const first=(p.name||'there').split(' ')[0],fill=s=>s.replace(/\{name\}/gi,first);
+   const first=fn(p.name),fill=s=>s.replace(/\{name\}/gi,first);
    try{await tr.sendMail({from:`Regis <${process.env.GMAIL_USER}>`,to:p.email,subject:fill(subject),text:fill(message)+foot});sent++}catch(e){failed++;last=e.message}}));
   if(!sent&&failed)throw new Error(last);
   res.json({sent,failed});
