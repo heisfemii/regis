@@ -26,7 +26,7 @@ function Shell(){
    </div></div></header>
   <div key={pathname} className="page"><ErrorBoundary><Routes>
    <Route path="/" element={<Home/>}/><Route path="/shop" element={<Shop/>}/><Route path="/watch/:id" element={<Watch/>}/><Route path="/cart" element={<Cart/>}/>
-   <Route path="/login" element={user?<Navigate to="/"/>:<Login/>}/>
+   <Route path="/login" element={user?<Navigate to={isAdmin?'/admin':'/account'} replace/>:<Login/>}/>
    <Route path="/account" element={user?<Account/>:<Navigate to="/login"/>}/><Route path="/receipt/:id" element={user?<Receipt/>:<Navigate to="/login"/>}/>
    <Route path="/admin" element={isAdmin?<Admin/>:<Navigate to="/"/>}/><Route path="/terms" element={<Legal doc="terms"/>}/><Route path="/privacy" element={<Legal doc="privacy"/>}/><Route path="/refunds" element={<Legal doc="refunds"/>}/><Route path="*" element={<NotFound/>}/>
   </Routes></ErrorBoundary></div>

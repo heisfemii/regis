@@ -11,10 +11,10 @@ export default function Login(){
   if(mode==='forgot'){setBusy('mail');try{await reset(f.email.trim());toast('Reset link sent. Check your inbox and spam folder.');go('login')}catch(x){setErr(msg(x,'We couldn’t send the reset link. Please try again.'))}return setBusy('')}
   if(f.pw.length<6)return setErr('Your password needs at least 6 characters.');
   setBusy('mail');
-  try{mode==='login'?await login(f.email.trim(),f.pw):await signup(f.name.trim(),f.email.trim(),f.pw);nav('/')}
+  try{mode==='login'?await login(f.email.trim(),f.pw):await signup(f.name.trim(),f.email.trim(),f.pw)}
   catch(x){setErr(msg(x,mode==='login'?'We couldn’t log you in. Please try again.':'We couldn’t create your account. Please try again.'))}
   setBusy('');}
- async function viaGoogle(){setBusy('google');setErr('');try{await google();nav('/')}catch(x){setErr(msg(x,'We couldn’t sign you in with Google. Please try again.'))}setBusy('')}
+ async function viaGoogle(){setBusy('google');setErr('');try{await google()}catch(x){setErr(msg(x,'We couldn’t sign you in with Google. Please try again.'))}setBusy('')}
  const T={login:['Welcome back','Log in to see your credits and orders.'],signup:['Join Regis','Create an account and earn credits on every order.'],forgot:['Reset password','We’ll email you a link to choose a new one.']}[mode];
  return <form className="box auth" onSubmit={submit} noValidate><h2>{T[0]}</h2><p className="muted">{T[1]}</p>
   {mode!=='forgot'&&<><button type="button" className="gbtn" disabled={!!busy} onClick={viaGoogle}><Google/>{busy==='google'?'Opening Google…':'Continue with Google'}</button><div className="or"><span>or</span></div></>}

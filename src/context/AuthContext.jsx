@@ -2,6 +2,7 @@ import {createContext,useContext,useEffect,useRef,useState} from 'react';
 import {onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,updateProfile,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,sendPasswordResetEmail} from 'firebase/auth';
 import {doc,setDoc,getDoc,onSnapshot,serverTimestamp} from 'firebase/firestore';
 import {auth,db} from '../services/firebase';
+let RET=false;try{RET=!!sessionStorage.getItem('regis_redirect')}catch{}
 try{if(typeof window!=='undefined'){
  const K='regis_left',nav=performance.getEntriesByType?.('navigation')?.[0]?.type,same=document.referrer.startsWith(window.location.origin);
  if(sessionStorage.getItem(K)&&nav!=='reload'&&!same&&!sessionStorage.getItem('regis_redirect'))signOut(auth).catch(()=>{});
@@ -14,9 +15,10 @@ const C=createContext();export const useAuth=()=>useContext(C);
 export default function AuthProvider({children}){
  const [user,setUser]=useState(null),[profile,setProfile]=useState(null),[isAdmin,setAdmin]=useState(false),[loading,setLoading]=useState(true),signing=useRef(false);
  useEffect(()=>{let unsub=()=>{};
-  getRedirectResult(auth).catch(()=>{});
-  const off=onAuthStateChanged(auth,async u=>{unsub();setUser(u);
-   if(!u){setProfile(null);setAdmin(false);setLoading(false);return;}
+  const pending=getRedirectResult(auth).catch(()=>null);
+  const off=onAuthStateChanged(auth,async u=>{unsub();
+   if(!u){if(RET)await pending;if(auth.currentUser)return;setUser(null);setProfile(null);setAdmin(false);setLoading(false);return;}
+   setLoading(true);setUser(u);
    const ref=doc(db,'users',u.uid);
    if(!signing.current){try{if(!(await getDoc(ref)).exists()){await setDoc(ref,{name:u.displayName||(u.email||'Friend').split('@')[0],email:u.email,credits:0,marketing:true,createdAt:serverTimestamp()});welcome(u)}}catch{}}
    unsub=onSnapshot(ref,s=>setProfile(s.data()||null),()=>{});
