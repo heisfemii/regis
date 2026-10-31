@@ -44,3 +44,4 @@
 .gface.b{transform:rotateY(180deg) translateZ(.5px)}
 .gface .im img{transform:none!important;transition:none!important}
 .gbook,.gpage{will-change:transform}
+.gpage{transition:transform 1s var(--ease) calc(var(--i)*55ms),opacity .35s}

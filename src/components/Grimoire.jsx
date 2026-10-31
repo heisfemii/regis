@@ -24,8 +24,8 @@ export default function Grimoire({items}){
   const io=new IntersectionObserver(([e])=>{
    if(e.isIntersecting&&!vis){vis=true;last=0;raf=requestAnimationFrame(tick)}
    if(!e.isIntersecting&&vis){vis=false;cancelAnimationFrame(raf)}
-   if(e.intersectionRatio>=.3&&!openedAt){openedAt=performance.now();setOpen(true)}
-  },{threshold:[0,.3]});
+      if(e.isIntersecting&&!openedAt){openedAt=performance.now();setOpen(true)}
+  },{rootMargin:'0px 0px 60% 0px',threshold:[0]});
   io.observe(el);apply();
   return()=>{io.disconnect();cancelAnimationFrame(raf)};
  },[]);
