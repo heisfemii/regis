@@ -9,7 +9,7 @@ export default function Grimoire({items}){
  const stage=useRef(null),book=useRef(null),focus=useRef(null),pages=useRef([]);
  const rot=useRef(-8),vel=useRef(0),selR=useRef(null),down=useRef(false),hover=useRef(false),moved=useRef(false),drag=useRef({x:0,t:0,id:0}),fx=useRef({rect:null,dir:0});
  selR.current=sel;
- const apply=()=>{if(book.current)book.current.style.setProperty('--r',rot.current.toFixed(2)+'deg')};
+ const apply=()=>{if(book.current)book.current.style.transform=`translateY(-8px) rotateX(-9deg) rotateY(${rot.current.toFixed(2)}deg)`};
  // opening + slow idle turn; only runs while the book is on screen
  useEffect(()=>{
   const el=stage.current;if(!el)return undefined;

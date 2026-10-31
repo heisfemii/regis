@@ -39,3 +39,8 @@
  .gfocus{width:min(260px,78%);height:min(370px,calc(100% - 120px))}
  .gcard{padding:14px}.gcard .gname{font-size:17px;min-height:42px}
  .gbtns button,.gbtns a{padding:9px 15px;font-size:14px}}
+ .gface,.gface *{-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.gface{transform:translateZ(.5px)}
+.gface.b{transform:rotateY(180deg) translateZ(.5px)}
+.gface .im img{transform:none!important;transition:none!important}
+.gbook,.gpage{will-change:transform}
