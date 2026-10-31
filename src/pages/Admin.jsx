@@ -5,6 +5,15 @@ import {useToast} from '../context/ToastContext';import {naira,fmtDate,normalize
 const blank=()=>({name:'',brand:'',strap:'',price:'',description:'',inStock:true,featured:false,demo:'',colors:[{name:'',images:[]}]});
 const NEXT={packaging:['out_for_delivery','Mark out for delivery'],out_for_delivery:['delivered','Mark delivered']};
 const TABS=['Overview','Watches','Orders','Customers','Settings'];
+function Orders({o,act}){
+ const [q,setQ]=useState('');
+ const s=q.trim().replace(/^#/,'').toLowerCase();
+ const list=s?o.filter(x=>x.id.toLowerCase().includes(s)||(x.customer||'').toLowerCase().includes(s)||(x.email||'').toLowerCase().includes(s)):o;
+ return <div className="panel"><h2>Orders ({s?`${list.length} of ${o.length}`:o.length})</h2>
+  <input type="search" placeholder="Search by order ID, e.g. JEP35D3Y" value={q} onChange={e=>setQ(e.target.value)} aria-label="Search orders" style={{marginBottom:16}}/>
+  {!o.length&&<p className="muted">No orders yet.</p>}
+  {!!o.length&&!list.length&&<p className="muted">No order matches “{q.trim()}”.</p>}
+  {list.map(x=><OrderRow key={x.id} x={x} act={act}/>)}</div>;}
 const Thumb=({s})=>s?<img className="thumb" src={s} alt=""/>:<div className="thumb"/>;
 function OrderRow({x,act}){return <div className="orow"><div className="ohead"><div><b>#{x.id.slice(0,8).toUpperCase()}</b> · {x.customer} <span className="muted">· {x.email} · {fmtDate(x.createdAt)}</span></div><div><b>{naira(x.total)}</b> · <span className={'tag '+x.status}>{x.status==='cancelled'?'cancelled':LABEL[stageOf(x)]}</span></div></div>
  {x.items.map((i,n)=><div className="arow" key={n}><Thumb s={i.image}/><div className="grow"><b>{i.name}</b><p className="muted">{i.brand} · {i.color} · {i.strap} · x{i.qty}</p></div><span>{naira(i.price*i.qty)}</span></div>)}
@@ -54,7 +63,7 @@ export default function Admin(){
    <div className="ctas left"><button className="pill" disabled={busy} onClick={save}>{busy?'Please wait…':eid?'Save changes':'Add watch'}</button>{eid&&<button className="pill ghost" onClick={reset}>Cancel edit</button>}</div></div>
    <div className="panel"><h2>All watches ({w.length})</h2>{w.map(x=><div className="arow" key={x.id}><Thumb s={cover(x)}/><div className="grow"><b>{x.name}</b><p className="muted">{x.brand} · {colorsOf(x).map(c=>c.name).join(', ')} · {naira(x.price)}{x.featured?' · ★ In The latest':''}</p></div>
     <a href="#" onClick={e=>{e.preventDefault();run(()=>updateWatch(x.id,{featured:!x.featured}),x.featured?'Removed from The latest':'Added to The latest')}}>{x.featured?'★ Unfeature':'☆ Feature'}</a><a href="#" onClick={e=>{e.preventDefault();edit(x)}}>Edit</a><a href="#" onClick={e=>{e.preventDefault();run(()=>updateWatch(x.id,{inStock:!x.inStock}),'Updated')}}>{x.inStock?'Mark sold out':'Restock'}</a><a href="#" onClick={e=>{e.preventDefault();window.confirm('Delete this watch?')&&run(()=>deleteWatch(x.id),'Deleted')}}>Delete</a></div>)}</div></>}
-  {tab==='Orders'&&<div className="panel"><h2>Orders ({o.length})</h2>{!o.length&&<p className="muted">No orders yet.</p>}{o.map(x=><OrderRow key={x.id} x={x} act={act}/>)}</div>}
+{tab==='Orders'&&<Orders o={o} act={act}/>}<h2>Orders ({o.length})</h2>{!o.length&&<p className="muted">No orders yet.</p>}{o.map(x=><OrderRow key={x.id} x={x} act={act}/>)}</div>}
   {tab==='Customers'&&<><div className="panel"><h2>Send a promotion</h2><p className="muted">Goes to {emails.length} subscribed customers. Unsubscribed customers are skipped.</p>
    <div className="fgrid"><select aria-label="Template" value={tpl} onChange={e=>pickTpl(e.target.value,mail.watchId)}>{TEMPLATES.map(t=><option key={t.id} value={t.id}>{t.label}</option>)}</select>
    {TEMPLATES.find(t=>t.id===tpl)?.watch&&<select aria-label="Watch" value={mail.watchId} onChange={e=>pickTpl(tpl,e.target.value)}><option value="">Choose a watch…</option>{w.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}</select>}</div>

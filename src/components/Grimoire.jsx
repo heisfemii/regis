@@ -6,7 +6,7 @@ const Card=({w})=><><span className="eyebrow">{w.brand||'New'}</span><b classNam
 const calm=()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 export default function Grimoire({items}){
  const n=items.length,step=360/Math.max(n,4);
- const [open,setOpen]=useState(false),[sel,setSel]=useState(null),[mend,setMend]=useState(null);
+ const [open,setOpen]=useState(false),[sel,setSel]=useState(null),[mend,setMend]=useState(null),[torn,setTorn]=useState('l');
  const stage=useRef(null),book=useRef(null),focus=useRef(null),pages=useRef([]);
  const rot=useRef(-8),vel=useRef(0),selR=useRef(null),down=useRef(false),hover=useRef(false),moved=useRef(false),drag=useRef({x:0,t:0,id:0}),fx=useRef({rect:null,dir:0});
  selR.current=sel;
@@ -34,21 +34,25 @@ export default function Grimoire({items}){
  // the card is yanked out of the book: grab, rip free, then glide to the centre
  useLayoutEffect(()=>{
   if(sel===null||!focus.current||calm()||!focus.current.animate)return undefined;
-  const el=focus.current,f=fx.current,r=el.getBoundingClientRect();let dx,dy,k;
+  const el=focus.current,f=fx.current,r=el.getBoundingClientRect(),m=f.t==='r'?-1:1;let dx,dy,k;
   if(f.rect&&r.width){k=Math.min(1,Math.max(.35,f.rect.width/r.width));dx=f.rect.left+f.rect.width/2-(r.left+r.width/2);dy=f.rect.top+f.rect.height/2-(r.top+r.height/2)}
   else{k=.96;dx=f.dir*70;dy=0}
   f.rect=null;
   const T=(x,y,s,a)=>`translate(${x}px,${y}px) scale(${s}) rotate(${a}deg)`,E='cubic-bezier(.22,1,.36,1)';
   const a=el.animate([
    {transform:T(dx,dy,k,0),opacity:.6,offset:0,easing:'ease-out'},
-   {transform:T(dx+4,dy+2,k,-2),opacity:1,offset:.14,easing:'ease-in'},
-   {transform:T(dx*.9-10,dy*.9-6,k*1.04,-6),opacity:1,offset:.3,easing:E},
-   {transform:T(dx*.12,dy*.12,1.02,2.5),opacity:1,offset:.72,easing:E},
+   {transform:T(dx+4*m,dy+2,k,-2*m),opacity:1,offset:.14,easing:'ease-in'},
+   {transform:T(dx*.9-10*m,dy*.9-6,k*1.04,-6*m),opacity:1,offset:.3,easing:E},
+   {transform:T(dx*.12,dy*.12,1.02,2.5*m),opacity:1,offset:.72,easing:E},
    {transform:T(0,0,1,0),opacity:1,offset:1}],{duration:900});
   return()=>a.cancel();
  },[sel]);
  useEffect(()=>{if(mend===null)return undefined;const t=setTimeout(()=>setMend(null),700);return()=>clearTimeout(t)},[mend]);
- const pick=(i,dir=0)=>{const pg=pages.current[i];fx.current={rect:dir===0&&pg?pg.getBoundingClientRect():null,dir};if(sel!==null&&sel!==i)setMend(sel);setSel(i)};
+ const pick=(i,dir=0)=>{
+  const pg=pages.current[i],st=stage.current;let t='l';
+  if(pg&&st){const p=pg.getBoundingClientRect(),c=st.getBoundingClientRect();t=p.left+p.width/2<c.left+c.width/2?'r':'l'}   // page left of the spine: it tears away from its right edge
+  fx.current={rect:dir===0&&pg?pg.getBoundingClientRect():null,dir,t};
+  if(sel!==null&&sel!==i)setMend(sel);setTorn(t);setSel(i)};
  const go=d=>pick((sel+d+n)%n,d),close=()=>{if(sel!==null)setMend(sel);setSel(null)};
  useEffect(()=>{
   if(sel===null)return undefined;
@@ -75,7 +79,7 @@ export default function Grimoire({items}){
   </div>
   <p className="ghint">Drag to turn the pages · tap a page to open it</p>
   {w&&<div className="gover" onClick={close}>
-   <div className="gfocus" key={w.id} ref={focus} onClick={e=>e.stopPropagation()}>
+   <div className={'gfocus'+(torn==='r'?' tr':'')} key={w.id} ref={focus} onClick={e=>e.stopPropagation()}>
     <i className="gfiber"/><div className="gcard"><Card w={w}/></div>
     {BITS.map((b,i)=><i key={i} className="gbit" style={{'--y':b.y,'--s':b.s+'px','--bx':b.bx+'px','--by':b.by+'px','--br':b.br+'deg'}}/>)}
    </div>
