@@ -16,6 +16,7 @@ export default function Home(){
   </section>
   {latest.length>0&&<section id="latest" className="sec" style={{paddingBottom:40}}><div className="wrap"><Reveal><h2 className="title">The latest.</h2><p className="lead">Take a look at what’s new.</p></Reveal></div>
    <div className="wrap"><Reveal><Grimoire items={latest}/></Reveal></div></section>}
+  <section className="cta-end"><div className="wrap"><Reveal><h2 className="title big">Find your watch.</h2><Link className="pill" to="/shop">Shop the collection</Link></Reveal></div></section>
   <section className="sec"><div className="wrap"><Reveal><h2 className="title">Why Regis?</h2></Reveal>
    <div className="three">{FEATS.map(([i,t,d],n)=><Reveal key={t} delay={n*100}><div className="feat"><Icon n={i}/><h3>{t}</h3><p className="muted">{d}</p></div></Reveal>)}</div></div></section>
   <section className="tiles one"><Reveal className="wide"><div className="tile g">
@@ -25,5 +26,4 @@ export default function Home(){
    <div className="ccard"><div className="chead"><span>Regis credits</span>{!user&&<em>Example</em>}</div><b><CountUp to={user?(profile?.credits||0):1300}/></b><div className="cbar"><i/></div><p>{user?'Applied at checkout, just tick the box.':`Earn ${CREDIT_RATE*100}% back on every order.`}</p></div>
   </div></Reveal></section>
   <section id="how" className="sec"><div className="wrap"><Reveal><h2 className="title">How it works.</h2></Reveal>
-   <div className="three">{STEPS.map(([t,d],i)=><Reveal key={t} delay={i*100}><div className="step"><span className="num">{i+1}</span><h3>{t}</h3><p className="muted">{d}</p></div></Reveal>)}</div></div></section>
-  <section className="cta-end"><div className="wrap"><Reveal><h2 className="title big">Find your watch.</h2><Link className="pill" to="/shop">Shop the collection</Link></Reveal></div></section></>;}
+   <div className="three">{STEPS.map(([t,d],i)=><Reveal key={t} delay={i*100}><div className="step"><span className="num">{i+1}</span><h3>{t}</h3><p className="muted">{d}</p></div></Reveal>)}</div></div></section></>;}

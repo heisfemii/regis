@@ -36,7 +36,7 @@ function Shell(){
     <div><h4>Shop</h4><Link to="/#latest">The latest</Link><Link to="/shop">Collection</Link>{!isAdmin&&<Link to="/cart">Cart</Link>}</div>
     {!isAdmin&&<div><h4>Account</h4>{user?<Link to="/account">My account</Link>:<><Link to="/login">Log in</Link><Link to="/login">Create account</Link></>}</div>}
     <div><h4>Customer support</h4><a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noreferrer">WhatsApp</a><a href={`https://mail.google.com/mail/?view=cm&fs=1&to=${SUPPORT_EMAIL}`} target="_blank" rel="noreferrer">Email support</a></div>
-    <div><h4>Legal</h4><Link to="/terms">Terms of Service</Link><Link to="/privacy">Privacy Policy</Link><Link to="/refunds">Refunds and delivery</Link></div><div><h4>Follow</h4><a href="https://instagram.com/regis.watch" target="_blank" rel="noreferrer">Instagram</a><a href="https://x.com/Regis_watches" target="_blank" rel="noreferrer">X</a></div>
+    <div><h4>Legal</h4><Link to="/terms">Terms of Service</Link><Link to="/privacy">Privacy Policy</Link><Link to="/refunds">Refunds and delivery</Link></div><div><h4>Follow</h4><a href="https://instagram.com/regiswatch.ng" target="_blank" rel="noreferrer">Instagram</a><a href="https://x.com/Regis_watches" target="_blank" rel="noreferrer">X</a></div>
    </div>
    <p className="legal">Copyright © {new Date().getFullYear()} Regis. All rights reserved. Nigeria.</p>
   </div></footer><CookieNotice/></>;}
