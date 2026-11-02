@@ -1,8 +1,8 @@
 import {useEffect,useState} from 'react';
 import {listWatches,addWatch,updateWatch,deleteWatch,uploadImage,colorsOf,cover} from '../services/watches';
 import {setMarketing,allOrders,listUsers,listAdminIds,confirmOrder,setStage,stageOf,cancelOrder} from '../services/orders';import {LABEL} from '../components/Tracker';import {auth} from '../services/firebase';
-import {useToast} from '../context/ToastContext';import {naira,fmtDate,normalizePhone,validPhone,fmtPhone} from '../services/config';import {TEMPLATES,fill} from '../services/templates';import {useSettings} from '../context/SettingsContext';import {saveWhatsapp} from '../services/settings';import {msg} from '../services/errors';
-const blank=()=>({name:'',brand:'',strap:'',price:'',description:'',inStock:true,featured:false,demo:'',colors:[{name:'',images:[]}]});
+import {useToast} from '../context/ToastContext';import {naira,fmtDate,normalizePhone,validPhone,fmtPhone} from '../services/config';import {TEMPLATES,fill} from '../services/templates';import {useSettings} from '../context/SettingsContext';import {saveWhatsapp} from '../services/settings';import {msg} from '../services/errors';import {GENDERS} from '../services/genders';
+const blank=()=>({name:'',brand:'',strap:'',price:'',description:'',inStock:true,featured:false,gender:'',demo:'',colors:[{name:'',images:[]}]});
 const NEXT={packaging:['out_for_delivery','Mark out for delivery'],out_for_delivery:['delivered','Mark delivered']};
 const TABS=['Overview','Watches','Orders','Customers','Settings'];
 function Orders({o,act}){
@@ -27,11 +27,11 @@ export default function Admin(){
  async function up(i,files){setBusy(true);try{const urls=await Promise.all([...files].map(uploadImage));setF(s=>({...s,colors:s.colors.map((c,n)=>n===i?{...c,images:[...c.images,...urls]}:c)}))}catch(e){toast(msg(e,'We couldn’t upload that photo. Check your connection or try a smaller image.'))}setBusy(false)}
  async function upDemo(file){if(!file)return;setBusy(true);try{const url=await uploadImage(file);setF(s=>({...s,demo:url}))}catch(e){toast(msg(e,'We couldn’t upload that photo. Check your connection or try a smaller image.'))}setBusy(false)}
  const reset=()=>{setF(blank());setEid(null)};
- function edit(x){setEid(x.id);setF({name:x.name||'',brand:x.brand||'',strap:x.strap||'',price:String(x.price||''),description:x.description||'',inStock:!!x.inStock,featured:!!x.featured,demo:x.demo||'',colors:colorsOf(x).map(c=>({name:c.name,images:[...(c.images||[])]}))});setTab('Watches');scrollTo(0,0)}
+ function edit(x){setEid(x.id);setF({name:x.name||'',brand:x.brand||'',strap:x.strap||'',price:String(x.price||''),description:x.description||'',inStock:!!x.inStock,featured:!!x.featured,gender:x.gender||'',demo:x.demo||'',colors:colorsOf(x).map(c=>({name:c.name,images:[...(c.images||[])]}))});setTab('Watches');scrollTo(0,0)}
  async function save(){
   const colors=f.colors.filter(c=>c.name.trim());
   if(!f.name||!f.price||!colors.length)return toast('Name, price and at least one colour are required');
-  setBusy(true);const d={name:f.name,brand:f.brand,strap:f.strap,description:f.description,inStock:f.inStock,featured:!!f.featured,demo:f.demo||'',price:Number(f.price),colors};
+  setBusy(true);const d={name:f.name,brand:f.brand,strap:f.strap,description:f.description,inStock:f.inStock,featured:!!f.featured,gender:f.gender||'',demo:f.demo||'',price:Number(f.price),colors};
   try{eid?await updateWatch(eid,d):await addWatch(d);toast(eid?'Watch updated':'Watch added');reset();load()}catch(e){toast(msg(e,'We couldn’t save the watch. Please try again.'))}setBusy(false)}
  const run=async(fn,m)=>{try{await fn();toast(m);load()}catch(e){toast(msg(e,'That didn’t work. Please try again.'))}};
  const doConfirm=async x=>{setBusy(true);try{const j=await confirmOrder(x);toast(j.emailed===false?'Payment confirmed. Email not sent: '+j.emailError:'Payment confirmed. Thank-you email sent'+(j.receipt==='text'?' (receipt as text, picture failed: '+(j.receiptError||'unknown')+')':''));load()}catch(e){toast(e.message||'Failed')}setBusy(false)};
@@ -52,6 +52,7 @@ export default function Admin(){
   {tab==='Watches'&&<><div className="panel"><h2>{eid?'Edit watch':'Add a watch'}</h2>
    <div className="fgrid"><input placeholder="Name" value={f.name} onChange={set('name')}/><input placeholder="Brand" value={f.brand} onChange={set('brand')}/><input placeholder="Strap" value={f.strap} onChange={set('strap')}/><input placeholder="Price (₦)" type="number" value={f.price} onChange={set('price')}/></div>
    <textarea placeholder="Description" rows="3" value={f.description} onChange={set('description')}/>
+   <h3>Who is it for?</h3><div className="chips" role="group" aria-label="Who is it for?">{GENDERS.map(g=><button type="button" key={g.id} className={f.gender===g.id?'on':''} aria-pressed={f.gender===g.id} onClick={()=>setF({...f,gender:f.gender===g.id?'':g.id})}>{g.label}</button>)}</div>
    <h3>Display image</h3><p className="muted">The clean studio shot shown on the shop and home page. Customers see the real photos below once they tap the watch.</p>
    <div className="colrow"><input type="file" accept="image/*" onChange={e=>upDemo(e.target.files[0])}/>{f.demo&&<div className="thumbs"><span className="tw"><img src={f.demo} alt=""/><a href="#" aria-label="Remove display image" onClick={e=>{e.preventDefault();setF({...f,demo:''})}}>✕</a></span></div>}</div>
    <h3>Colours and real photos</h3>{f.colors.map((c,i)=><div className="colrow" key={i}><div className="fgrid"><input placeholder="Colour name (e.g. Black)" value={c.name} onChange={e=>setCol(i,{name:e.target.value})}/><input type="file" accept="image/*" multiple onChange={e=>up(i,e.target.files)}/></div>
@@ -61,7 +62,7 @@ export default function Admin(){
    <label><input type="checkbox" checked={f.inStock} onChange={e=>setF({...f,inStock:e.target.checked})}/> In stock</label>
    <label><input type="checkbox" checked={f.featured} onChange={e=>setF({...f,featured:e.target.checked})}/> Show in “The latest” on the home page</label>
    <div className="ctas left"><button className="pill" disabled={busy} onClick={save}>{busy?'Please wait…':eid?'Save changes':'Add watch'}</button>{eid&&<button className="pill ghost" onClick={reset}>Cancel edit</button>}</div></div>
-   <div className="panel"><h2>All watches ({w.length})</h2>{w.map(x=><div className="arow" key={x.id}><Thumb s={cover(x)}/><div className="grow"><b>{x.name}</b><p className="muted">{x.brand} · {colorsOf(x).map(c=>c.name).join(', ')} · {naira(x.price)}{x.featured?' · ★ In The latest':''}</p></div>
+   <div className="panel"><h2>All watches ({w.length})</h2>{w.map(x=><div className="arow" key={x.id}><Thumb s={cover(x)}/><div className="grow"><b>{x.name}</b><p className="muted">{x.brand} · {GENDERS.find(g=>g.id===x.gender)?.label||'No category'} · {colorsOf(x).map(c=>c.name).join(', ')} · {naira(x.price)}{x.featured?' · ★ In The latest':''}</p></div>
     <a href="#" onClick={e=>{e.preventDefault();run(()=>updateWatch(x.id,{featured:!x.featured}),x.featured?'Removed from The latest':'Added to The latest')}}>{x.featured?'★ Unfeature':'☆ Feature'}</a><a href="#" onClick={e=>{e.preventDefault();edit(x)}}>Edit</a><a href="#" onClick={e=>{e.preventDefault();run(()=>updateWatch(x.id,{inStock:!x.inStock}),'Updated')}}>{x.inStock?'Mark sold out':'Restock'}</a><a href="#" onClick={e=>{e.preventDefault();window.confirm('Delete this watch?')&&run(()=>deleteWatch(x.id),'Deleted')}}>Delete</a></div>)}</div></>}
   {tab==='Orders'&&<Orders o={o} act={act}/>}
   {tab==='Customers'&&<><div className="panel"><h2>Send a promotion</h2><p className="muted">Goes to {emails.length} subscribed customers. Unsubscribed customers are skipped.</p>
