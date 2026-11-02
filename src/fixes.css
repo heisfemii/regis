@@ -26,3 +26,10 @@ body .cookie button{flex:0 0 auto;box-sizing:border-box;width:auto;min-width:96p
 /* footer: social icons beside Instagram and X */
 .fcols a.social{display:inline-flex;align-items:center;gap:8px}
 .fcols a.social svg{flex:none}
+/* shop: tidy filters */
+body .sfilters{display:flex;flex-direction:column;gap:18px;margin:8px 0 40px}
+body .sfilters .search{width:100%;max-width:380px}
+body .sfilters .frow{display:flex;align-items:flex-start;gap:16px}
+body .sfilters .flabel{flex:0 0 60px;padding-top:12px;font-size:13px;font-weight:600;letter-spacing:.02em;color:var(--mut)}
+body .sfilters .chips{flex:1;min-width:0;margin:0}
+@media(max-width:560px){body .sfilters .frow{flex-direction:column;gap:8px}body .sfilters .flabel{flex:none;padding-top:0}}

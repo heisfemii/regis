@@ -10,9 +10,11 @@ export default function Shop(){
  if(busy)return <Loader/>;
  return <section className="sec" style={{paddingTop:72}}><div className="wrap">
   <h1 className="title big st">Shop.</h1><p className="lead st" style={{'--d':'120ms'}}>Hand-picked watches at honest prices.</p>
-  {kinds.length>0&&<div className="chips" role="group" aria-label="Filter by who it is for" style={{marginBottom:0}}>{[{id:'all',label:'All watches'},...kinds].map(g=><button key={g.id} className={g.id===who?'on':''} aria-pressed={g.id===who} onClick={()=>{setWho(g.id);setBrand('All')}}>{g.label}</button>)}</div>}
-  <div className="tools"><div className="chips" role="group" aria-label="Filter by brand">{['All',...brands].map(b=><button key={b} className={b===bsel?'on':''} onClick={()=>setBrand(b)}>{b}</button>)}</div>
-   <input className="search" type="search" placeholder="Search" aria-label="Search watches" value={q} onChange={e=>setQ(e.target.value)}/></div>
+  <div className="sfilters">
+   <input className="search" type="search" placeholder="Search watches" aria-label="Search watches" value={q} onChange={e=>setQ(e.target.value)}/>
+   {kinds.length>0&&<div className="frow"><span className="flabel">Show</span><div className="chips" role="group" aria-label="Filter by who it is for">{[{id:'all',label:'All watches'},...kinds].map(g=><button key={g.id} className={g.id===who?'on':''} aria-pressed={g.id===who} onClick={()=>{setWho(g.id);setBrand('All')}}>{g.label}</button>)}</div></div>}
+   <div className="frow"><span className="flabel">Brand</span><div className="chips" role="group" aria-label="Filter by brand">{['All',...brands].map(b=><button key={b} className={b===bsel?'on':''} aria-pressed={b===bsel} onClick={()=>setBrand(b)}>{b}</button>)}</div></div>
+  </div>
   {err&&<div className="center"><p>{err}</p><button className="pill" onClick={load}>Try again</button></div>}
   {!busy&&!err&&!shown.length&&<p className="center">{w.length?'No watches match your search.':'New pieces landing soon.'}</p>}
   <div className="grid">{shown.map((x,i)=><Reveal key={x.id} delay={(i%4)*80}><Link to={'/watch/'+x.id} className="card">
