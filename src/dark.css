@@ -1,0 +1,20 @@
+/* ---- theme toggle button ---- */
+.theme-toggle{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border:0;border-radius:50%;background:transparent;color:var(--ink);cursor:pointer;opacity:.8;transition:opacity .2s,background .2s}
+.theme-toggle:hover{opacity:1;background:#0000000d}
+/* ---- dark mode (screen only, so receipts still print in light colours) ---- */
+@media screen{
+html[data-theme="dark"]{color-scheme:dark;--bg:#121311;--card:#1b1c19;--ink:#f2f0ea;--mut:#a5a39a;--line:#33342e;--g:#9aab63;--gd:#b0c07a;--on:#13150d}
+html[data-theme="dark"] .theme-toggle:hover{background:#ffffff14}
+html[data-theme="dark"] .ann,html[data-theme="dark"] footer,html[data-theme="dark"] .chips button,html[data-theme="dark"] .pill.ghost,html[data-theme="dark"] .tag,html[data-theme="dark"] .qty button,html[data-theme="dark"] .chead em,html[data-theme="dark"] .cbar,html[data-theme="dark"] .dbg{background:#242520}
+html[data-theme="dark"] .chips button:hover,html[data-theme="dark"] .pill.ghost:hover:not(:disabled),html[data-theme="dark"] .qty button:hover:not(:disabled){background:#30312b}
+html[data-theme="dark"] .chips button.on,html[data-theme="dark"] .chips .on:hover{background:var(--ink);color:var(--on)}
+html[data-theme="dark"] .top{background:#121311cc;border-bottom-color:#ffffff14}
+html[data-theme="dark"] .err{background:#3b1c18;color:#ffb3a7}
+html[data-theme="dark"] .skel{background:linear-gradient(100deg,#1b1c19 30%,#262722 50%,#1b1c19 70%);background-size:200% 100%}
+html[data-theme="dark"] .tw a{background:#000000b3;color:#fff}
+html[data-theme="dark"] .stat.g span{color:#13150db3}
+html[data-theme="dark"] .tile.g{background:linear-gradient(120deg,var(--g),#b4c27c,var(--g));background-size:200% 200%}
+html[data-theme="dark"] body .cookie{background:#1b1c19;color:var(--ink);box-shadow:0 14px 40px #0009}
+html[data-theme="dark"] body .cookie a{color:var(--g)}
+html[data-theme="dark"] .policy p,html[data-theme="dark"] .policy li{color:var(--ink)}
+}

@@ -1,5 +1,6 @@
 import {useEffect,useState} from 'react';
 import {InstagramIcon,XIcon} from './components/Social';
+import ThemeToggle from './components/ThemeToggle';
 import {Routes,Route,Link,Navigate,useLocation} from 'react-router-dom';
 import {useAuth} from './context/AuthContext';import {useCart} from './context/CartContext';
 import Home from './pages/Home';import Shop from './pages/Shop';import Watch from './pages/Watch';import Cart from './pages/Cart';import Login from './pages/Login';import Account from './pages/Account';import Admin from './pages/Admin';import Receipt from './pages/Receipt';import NotFound from './pages/NotFound';
@@ -20,7 +21,7 @@ function Shell(){
   <div className="ann">Order on WhatsApp · Nationwide delivery · Earn credits on every order</div>
   <header className="top"><div className="bar"><Link to="/" className="logo">REGIS</Link>
    <nav className="mid" aria-label="Main"><Link to="/#latest">Latest</Link><Link to="/shop">Shop</Link><Link to="/#how">How it works</Link></nav>
-   <div className="right">
+   <div className="right"><ThemeToggle/>
     {isAdmin?<><Link to="/admin">Dashboard</Link><Link to="/">View store</Link>{out}</>
     :<>{user?<><Link to="/account">Account</Link>{out}</>:<Link to="/login">Log in</Link>}
      <Link to="/cart" className="bag" aria-label={`Cart, ${count} items`}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 8h12l1 12H5z M9 8a3 3 0 016 0"/></svg>{count>0&&<span className="dot" key={count}>{count}</span>}</Link></>}
