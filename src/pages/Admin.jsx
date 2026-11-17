@@ -1,7 +1,7 @@
 import {useEffect,useState} from 'react';
 import {listWatches,addWatch,updateWatch,deleteWatch,uploadImage,colorsOf,cover} from '../services/watches';
 import {setMarketing,allOrders,listUsers,listAdminIds,confirmOrder,setStage,stageOf,cancelOrder} from '../services/orders';import {LABEL} from '../components/Tracker';import {auth} from '../services/firebase';
-import {useToast} from '../context/ToastContext';import {naira,fmtDate,normalizePhone,validPhone,fmtPhone} from '../services/config';import {TEMPLATES,fill} from '../services/templates';import {useSettings} from '../context/SettingsContext';import {saveWhatsapp} from '../services/settings';import {msg} from '../services/errors';import {GENDERS} from '../services/genders';
+import {useToast} from '../context/ToastContext';import {naira,fmtDate,normalizePhone,validPhone,fmtPhone} from '../services/config';import {TEMPLATES,fill} from '../services/templates';import {useSettings} from '../context/SettingsContext';import {saveWhatsapp} from '../services/settings';import {msg} from '../services/errors';import {GENDERS} from '../services/genders';import AdminReceipt from '../components/AdminReceipt';
 const blank=()=>({name:'',brand:'',strap:'',price:'',description:'',inStock:true,featured:false,gender:'',demo:'',colors:[{name:'',images:[]}]});
 const NEXT={packaging:['out_for_delivery','Mark out for delivery'],out_for_delivery:['delivered','Mark delivered']};
 const TABS=['Overview','Watches','Orders','Customers','Settings'];
@@ -18,9 +18,9 @@ const Thumb=({s})=>s?<img className="thumb" src={s} alt=""/>:<div className="thu
 function OrderRow({x,act}){return <div className="orow"><div className="ohead"><div><b>#{x.id.slice(0,8).toUpperCase()}</b> · {x.customer} <span className="muted">· {x.email} · {fmtDate(x.createdAt)}</span></div><div><b>{naira(x.total)}</b> · <span className={'tag '+x.status}>{x.status==='cancelled'?'cancelled':LABEL[stageOf(x)]}</span></div></div>
  {x.items.map((i,n)=><div className="arow" key={n}><Thumb s={i.image}/><div className="grow"><b>{i.name}</b><p className="muted">{i.brand} · {i.color} · {i.strap} · x{i.qty}</p></div><span>{naira(i.price*i.qty)}</span></div>)}
  {act&&x.status==='pending'&&<div className="ctas left"><button className="pill" disabled={act.busy} onClick={()=>window.confirm('Confirm payment received? The customer gets a thank-you email.')&&act.confirm(x)}>Confirm payment</button><button className="pill ghost" onClick={()=>act.cancel(x)}>Cancel</button></div>}
- {act&&x.status==='paid'&&NEXT[stageOf(x)]&&<div className="ctas left"><button className="pill" onClick={()=>act.next(x)}>{NEXT[stageOf(x)][1]}</button></div>}</div>}
+ {act&&x.status==='paid'&&<div className="ctas left">{NEXT[stageOf(x)]&&<button className="pill" onClick={()=>act.next(x)}>{NEXT[stageOf(x)][1]}</button>}<button className="pill ghost" onClick={()=>act.studio(x)}>Content receipt</button></div>}</div>}
 export default function Admin(){
- const {whatsapp,setWhatsapp}=useSettings(),toast=useToast(),[tab,setTab]=useState('Overview'),[w,setW]=useState([]),[o,setO]=useState([]),[u,setU]=useState([]),[adm,setAdm]=useState([]),[f,setF]=useState(blank()),[eid,setEid]=useState(null),[busy,setBusy]=useState(false),[mail,setMail]=useState({subject:'',message:'',watchId:''}),[tpl,setTpl]=useState('blank'),[waIn,setWaIn]=useState('');
+ const {whatsapp,setWhatsapp}=useSettings(),toast=useToast(),[tab,setTab]=useState('Overview'),[w,setW]=useState([]),[o,setO]=useState([]),[u,setU]=useState([]),[adm,setAdm]=useState([]),[f,setF]=useState(blank()),[eid,setEid]=useState(null),[busy,setBusy]=useState(false),[mail,setMail]=useState({subject:'',message:'',watchId:''}),[tpl,setTpl]=useState('blank'),[waIn,setWaIn]=useState(''),[rc,setRc]=useState(null);
  const load=()=>{listWatches().then(setW);allOrders().then(setO);listUsers().then(setU);listAdminIds().then(setAdm).catch(()=>{})};useEffect(load,[]);
  const set=k=>e=>setF({...f,[k]:e.target.value});
  const setCol=(i,p)=>setF(s=>({...s,colors:s.colors.map((c,n)=>n===i?{...c,...p}:c)}));
@@ -35,7 +35,7 @@ export default function Admin(){
   try{eid?await updateWatch(eid,d):await addWatch(d);toast(eid?'Watch updated':'Watch added');reset();load()}catch(e){toast(msg(e,'We couldn’t save the watch. Please try again.'))}setBusy(false)}
  const run=async(fn,m)=>{try{await fn();toast(m);load()}catch(e){toast(msg(e,'That didn’t work. Please try again.'))}};
  const doConfirm=async x=>{setBusy(true);try{const j=await confirmOrder(x);toast(j.emailed===false?'Payment confirmed. Email not sent: '+j.emailError:'Payment confirmed. Thank-you email sent'+(j.receipt==='text'?' (receipt as text, picture failed: '+(j.receiptError||'unknown')+')':''));load()}catch(e){toast(e.message||'Failed')}setBusy(false)};
- const act={busy,confirm:doConfirm,next:x=>run(()=>setStage(x,NEXT[stageOf(x)][0]),'Order updated'),cancel:x=>run(()=>cancelOrder(x),'Cancelled')};
+ const act={busy,confirm:doConfirm,next:x=>run(()=>setStage(x,NEXT[stageOf(x)][0]),'Order updated'),cancel:x=>run(()=>cancelOrder(x),'Cancelled'),studio:setRc};
  const cu=u.filter(x=>!adm.includes(x.id)),emails=cu.filter(x=>x.marketing!==false).map(x=>x.email).filter(Boolean),paid=o.filter(x=>x.status==='paid');
  async function send(test){
   if(!mail.subject||!mail.message)return toast('Add a subject and message');
@@ -73,4 +73,5 @@ export default function Admin(){
    <div className="ctas left"><button className="pill" disabled={busy||!emails.length} onClick={()=>send(false)}>{busy?'Sending…':`Send to ${emails.length} customers`}</button><button className="pill ghost" disabled={busy} onClick={()=>send(true)}>Send test to me</button><button className="pill ghost" onClick={()=>navigator.clipboard.writeText(emails.join(', ')).then(()=>toast('Emails copied'))}>Copy emails</button></div></div>
    <div className="panel"><h2>Customers ({cu.length})</h2>{cu.map(x=><div className="arow" key={x.id}><div className="grow"><b>{x.name}</b><p className="muted">{x.email}</p></div><span className={'tag '+(x.marketing===false?'':'paid')}>{x.marketing===false?'Unsubscribed':'Subscribed'}</span><span>{naira(x.credits)} credits</span><a href="#" onClick={e=>{e.preventDefault();run(()=>setMarketing(x.id,x.marketing===false),'Updated')}}>{x.marketing===false?'Add back':'Remove from promotions'}</a></div>)}</div></>}
   {tab==='Settings'&&<div className="panel"><h2>WhatsApp number</h2><p className="muted">Customers use this number for orders and support. Saving it updates the whole website.</p><input placeholder="e.g. 0803 123 4567" value={waIn} onChange={e=>setWaIn(e.target.value)}/><p className="muted">Currently: {fmtPhone(whatsapp)}</p><div className="ctas left"><button className="pill" disabled={busy} onClick={saveWa}>Save number</button></div></div>}
+  {rc&&<AdminReceipt o={rc} onClose={()=>setRc(null)}/>}
  </div>;}
