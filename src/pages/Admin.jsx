@@ -2,9 +2,10 @@ import {useEffect,useState} from 'react';
 import {listWatches,addWatch,updateWatch,deleteWatch,uploadImage,colorsOf,cover} from '../services/watches';
 import {setMarketing,allOrders,listUsers,listAdminIds,confirmOrder,setStage,stageOf,cancelOrder} from '../services/orders';import {LABEL} from '../components/Tracker';import {auth} from '../services/firebase';
 import {useToast} from '../context/ToastContext';import {naira,fmtDate,normalizePhone,validPhone,fmtPhone} from '../services/config';import {TEMPLATES,fill} from '../services/templates';import {useSettings} from '../context/SettingsContext';import {saveWhatsapp} from '../services/settings';import {msg} from '../services/errors';import {GENDERS} from '../services/genders';import AdminReceipt from '../components/AdminReceipt';
+import ContentStudio from '../components/ContentStudio';
 const blank=()=>({name:'',brand:'',strap:'',price:'',description:'',inStock:true,featured:false,gender:'',demo:'',colors:[{name:'',images:[]}]});
 const NEXT={packaging:['out_for_delivery','Mark out for delivery'],out_for_delivery:['delivered','Mark delivered']};
-const TABS=['Overview','Watches','Orders','Customers','Settings'];
+const TABS=['Overview','Watches','Orders','Customers','Content','Settings'];
 function Orders({o,act}){
  const [q,setQ]=useState('');
  const s=q.trim().replace(/^#/,'').toLowerCase();
@@ -65,6 +66,7 @@ export default function Admin(){
    <div className="panel"><h2>All watches ({w.length})</h2>{w.map(x=><div className="arow" key={x.id}><Thumb s={cover(x)}/><div className="grow"><b>{x.name}</b><p className="muted">{x.brand} · {GENDERS.find(g=>g.id===x.gender)?.label||'No category'} · {colorsOf(x).map(c=>c.name).join(', ')} · {naira(x.price)}{x.featured?' · ★ In The latest':''}</p></div>
     <a href="#" onClick={e=>{e.preventDefault();run(()=>updateWatch(x.id,{featured:!x.featured}),x.featured?'Removed from The latest':'Added to The latest')}}>{x.featured?'★ Unfeature':'☆ Feature'}</a><a href="#" onClick={e=>{e.preventDefault();edit(x)}}>Edit</a><a href="#" onClick={e=>{e.preventDefault();run(()=>updateWatch(x.id,{inStock:!x.inStock}),'Updated')}}>{x.inStock?'Mark sold out':'Restock'}</a><a href="#" onClick={e=>{e.preventDefault();window.confirm('Delete this watch?')&&run(()=>deleteWatch(x.id),'Deleted')}}>Delete</a></div>)}</div></>}
   {tab==='Orders'&&<Orders o={o} act={act}/>}
+  {tab==='Content'&&<ContentStudio w={w}/>}
   {tab==='Customers'&&<><div className="panel"><h2>Send a promotion</h2><p className="muted">Goes to {emails.length} subscribed customers. Unsubscribed customers are skipped.</p>
    <div className="fgrid"><select aria-label="Template" value={tpl} onChange={e=>pickTpl(e.target.value,mail.watchId)}>{TEMPLATES.map(t=><option key={t.id} value={t.id}>{t.label}</option>)}</select>
    {TEMPLATES.find(t=>t.id===tpl)?.watch&&<select aria-label="Watch" value={mail.watchId} onChange={e=>pickTpl(tpl,e.target.value)}><option value="">Choose a watch…</option>{w.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}</select>}</div>
