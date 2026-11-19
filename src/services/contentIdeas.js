@@ -5,7 +5,7 @@ import {blank} from './contentArt';
 const HT='#regiswatch #watchesnigeria #watchesofinstagram #wristcheck #nigerianbusiness',CTA='Shop: regiswatch.vercel.app · @regiswatch.ng';
 const rng=s=>()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
 const shuf=(a,r)=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b};
-const cov=w=>w?cover(w):'';
+const cov=w=>w?cover(w):'',lab=x=>`${x.name} · ${naira(x.price)}`;
 const cap=(body,extra='')=>`${body}\n\n${extra?extra+'\n\n':''}${CTA}\n\n${HT}`;
 export function upcoming(now=new Date()){
  const t0=new Date(now.getFullYear(),now.getMonth(),now.getDate()),ev=[];
@@ -40,7 +40,8 @@ export function buildIdeas(w=[],now=new Date(),seed=1){
  for(const e of upcoming(now)){
   if(e.k==='xmas'){
    out.push(idea('Seasonal','Christmas countdown',{type:'promo',theme:'christmas',tag:'Countdown',headline:`${e.days} days to Christmas`,sub:'Still deciding? A watch never goes out of style.',code:'DM TO ORDER',imgs:[cov(P[0]),'']},cap('Christmas is almost here. Give a gift that gets checked a hundred times a day.')));
-   out.push(idea('Seasonal','Gifts under a budget',{type:'promo',theme:'christmas',tag:'Christmas edit',headline:`Gifts under ${naira(cut)}`,sub:'Pieces that look like they cost more.',imgs:[cov(P.find(x=>x.price<=cut)||P[0]),'']},cap(`Christmas gifts under ${naira(cut)}, picked for people who care about the details.`)));
+   const u=P.filter(x=>x.price<=cut).slice(0,3),g=u.length?u:P.slice(0,3);
+   out.push(idea('Seasonal','Gifts under a budget',{type:'promo',theme:'christmas',tag:'Christmas edit',headline:`Gifts under ${naira(cut)}`,sub:'Pieces that look like they cost more.',imgs:g.map(cov),labels:g.map(lab)},cap(`Christmas gifts under ${naira(cut)}, picked for people who care about the details.`)));
    const a=by('men')[0]||P[0],b=by('women')[0]||P[1];
    out.push(idea('Seasonal','Gift for him or for her',{type:'versus',theme:'christmas',headline:'For him or for her?',imgs:[cov(a),cov(b)],labels:[a?`${a.name} · ${naira(a.price)}`:'',b?`${b.name} · ${naira(b.price)}`:'']},cap('Stuck on a gift? Pick a side and tell us who you are shopping for.')));
    out.push(idea('Seasonal','Christmas gift pick',{type:'spotlight',theme:'christmas',tag:'Gift pick',headline:P[1]?.name||'',sub:'Wrapped and ready to go.',price:P[1]?naira(P[1].price):'',imgs:[cov(P[1]),'']},cap(`${P[1]?.name||'This one'} is on the Christmas shortlist.`)));
@@ -53,7 +54,8 @@ export function buildIdeas(w=[],now=new Date(),seed=1){
   if(e.k==='ny')out.push(idea('Seasonal','New year, on time',{type:'quote',theme:'noir',headline:'Start the year on time.',sub:'REGIS · NEW YEAR'},cap('Start the year on time.')));
   if(e.k==='val')out.push(idea('Seasonal','His and hers',{type:'versus',theme:'christmas',headline:'His or hers?',imgs:[cov(by('men')[0]||P[0]),cov(by('women')[0]||P[1])]},cap('Say it with something that keeps time.')));
  }
- const evergreen=[];
+ const evergreen=[],nw=pool.slice(0,3);
+ if(nw.length>1)evergreen.push(idea('Showcase','New arrivals',{type:'spotlight',theme:'olive',tag:'New arrivals',headline:'New on the shelf',sub:'Fresh pieces, just in.',imgs:nw.map(cov),labels:nw.map(lab)},cap('New arrivals are in. Which one would you pick?')));
  P.slice(0,3).forEach((x,i)=>evergreen.push(idea('Showcase',i?`Watch of the day: ${x.name}`:`Just landed: ${x.name}`,{type:'spotlight',theme:'olive',tag:i?'Watch of the day':'Just landed',headline:x.name,sub:LINES[Math.floor(r()*LINES.length)],price:naira(x.price),imgs:[cov(x),'']},cap(`${x.name} is on the shelf.`,`${naira(x.price)}`))));
  if(P.length>=2)evergreen.push(idea('Engage','Which one’s yours?',{type:'versus',theme:'olive',imgs:[cov(P[0]),cov(P[1])],labels:[`${P[0].name} · ${naira(P[0].price)}`,`${P[1].name} · ${naira(P[1].price)}`]},cap('Left or right? Tell us in the comments, then see who wins.')));
  shuf(TIPS,r).slice(0,2).forEach(t=>evergreen.push(idea('Educate',t[1],{type:'tip',theme:'olive',tag:t[0],headline:t[1],sub:t[2]},cap(t[2]))));

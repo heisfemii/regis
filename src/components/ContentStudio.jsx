@@ -10,11 +10,12 @@ const card={background:'#ebe9e2',border:0,borderRadius:14,padding:'12px 14px',te
 export default function ContentStudio({w}){
  const toast=useToast(),init=useRef(false),[s,setS]=useState(()=>blank('promo')),[cap,setCap]=useState(''),[url,setUrl]=useState(''),[seed,setSeed]=useState(1),[cat,setCat]=useState('All'),[script,setScript]=useState(null);
  const ideas=useMemo(()=>buildIdeas(w,new Date(),seed),[w,seed]),shown=ideas.filter(i=>cat==='All'||i.cat===cat);
- const set=(k,v)=>setS(p=>({...p,[k]:v})),use=i=>{if(i.spec){setS(i.spec);setCap(i.caption);setScript(null)}else setScript(i)};
+ const set=(k,v)=>setS(p=>({...p,[k]:v})),use=i=>{if(i.spec){setS({...i.spec,count:Math.max(1,i.spec.imgs.filter(Boolean).length)});setCap(i.caption);setScript(null)}else setScript(i)};
  useEffect(()=>{const f=ideas.find(i=>i.spec);if(f&&!init.current){init.current=true;use(f)}},[ideas]);
  useEffect(()=>{let live=true;const t=setTimeout(()=>drawContent(s).then(c=>live&&setUrl(c.toDataURL('image/png'))).catch(()=>live&&toast('We couldn’t draw this image. Please try again.')),200);return()=>{live=false;clearTimeout(t)}},[s]);
  const sel=k=>w.find(a=>cover(a)&&cover(a)===s.imgs[k])?.id||'';
- const pick=(k,id)=>{const x=w.find(a=>a.id===id);setS(p=>{const imgs=[...p.imgs],labels=[...p.labels];imgs[k]=x?cover(x):'';labels[k]=x?`${x.name} · ${naira(x.price)}`:'';return p.type==='spotlight'&&x?{...p,imgs,headline:x.name,price:naira(x.price)}:{...p,imgs,labels}})};
+ const pick=(k,id)=>{const x=w.find(a=>a.id===id);setS(p=>{const imgs=[...p.imgs],labels=[...p.labels];imgs[k]=x?cover(x):'';labels[k]=x?`${x.name} · ${naira(x.price)}`:'';const f=imgs.filter(Boolean).length,q={...p,imgs,labels};if(p.type==='spotlight'){if(f===1&&x){q.headline=x.name;q.price=naira(x.price)}else if(f>1)q.price=''}return q})};
+ const cnt=s.type==='versus'?2:Math.max(1,s.count||1),dropLast=()=>setS(p=>{const imgs=[...p.imgs],labels=[...p.labels];imgs[cnt-1]='';labels[cnt-1]='';return{...p,imgs,labels,count:cnt-1}});
  const chips=(v,on,list)=><div className="chips">{list.map(([k,l])=><button type="button" key={k} className={v===k?'on':''} aria-pressed={v===k} onClick={()=>on(k)}>{l}</button>)}</div>;
  const WP=({k,label})=><label style={{display:'block'}}><span className="muted">{label}</span><select value={sel(k)} onChange={e=>pick(k,e.target.value)} style={{width:'100%'}}><option value="">None</option>{w.map(a=>a.id&&<option key={a.id} value={a.id}>{a.name} · {naira(a.price)}</option>)}</select></label>;
  const save=()=>{const a=document.createElement('a');a.href=url;a.download=`regis-${s.type}-${s.format}.png`;a.click()};
@@ -30,9 +31,10 @@ export default function ContentStudio({w}){
     <p className="muted">Type</p>{chips(s.type,t=>{setS(p=>({...blank(t),theme:p.theme,format:p.format}));setCap('')},TYPES)}
     <p className="muted">Look</p>{chips(s.theme,v=>set('theme',v),THEMES)}
     <p className="muted">Format</p>{chips(s.format,v=>set('format',v),[['feed','Post 4:5'],['story','Story 9:16']])}
-    {s.type==='promo'&&<WP k={0} label="Watch in the dial (optional)"/>}
-    {s.type==='spotlight'&&<WP k={0} label="Watch"/>}
-    {s.type==='versus'&&<><WP k={0} label="Watch A"/><WP k={1} label="Watch B"/></>}
+    {['promo','spotlight'].includes(s.type)&&<><p className="muted">Watch display</p>{chips(s.style||'photo',v=>set('style',v),[['photo','Full photo'],['dial','Dial (one watch)']])}</>}
+    {['promo','spotlight','versus'].includes(s.type)&&<>{Array.from({length:cnt},(_,k)=><WP key={k} k={k} label={s.type==='versus'?`Watch ${'AB'[k]}`:`Watch ${k+1}${s.type==='promo'&&k===0?' (optional)':''}`}/>)}
+     {s.type!=='versus'&&<div className="ctas left">{cnt<4&&<button type="button" className="pill ghost" onClick={()=>set('count',cnt+1)}>Add another watch</button>}{cnt>1&&<button type="button" className="pill ghost" onClick={dropLast}>Remove last watch</button>}</div>}
+     {(cnt>1||s.type==='versus')&&<label style={{display:'flex',gap:8,alignItems:'center'}}><input type="checkbox" checked={s.labelsOn!==false} onChange={e=>set('labelsOn',e.target.checked)}/>Show names and prices under the watches</label>}</>}
     {FIELDS[s.type].map(([k,l])=>(s.type==='tip'&&k==='sub')||(s.type==='quote'&&k==='headline')?<textarea key={k} rows={3} placeholder={l} value={s[k]} onChange={e=>set(k,e.target.value)} maxLength={260}/>:<input key={k} placeholder={l} value={s[k]} onChange={e=>set(k,e.target.value)} maxLength={90}/>)}
     {s.type==='promo'&&<p className="muted">The site has no discount-code system, so the offer line is only text on the image. Only promise what you will honour.</p>}
     <p className="muted">Caption</p><textarea rows={7} value={cap} onChange={e=>setCap(e.target.value)} placeholder="Caption for Instagram"/>
