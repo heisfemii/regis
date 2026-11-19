@@ -2,10 +2,10 @@ import {useEffect,useState} from 'react';
 import {listWatches,addWatch,updateWatch,deleteWatch,uploadImage,colorsOf,cover} from '../services/watches';
 import {setMarketing,allOrders,listUsers,listAdminIds,confirmOrder,setStage,stageOf,cancelOrder} from '../services/orders';import {LABEL} from '../components/Tracker';import {auth} from '../services/firebase';
 import {useToast} from '../context/ToastContext';import {naira,fmtDate,normalizePhone,validPhone,fmtPhone} from '../services/config';import {TEMPLATES,fill} from '../services/templates';import {useSettings} from '../context/SettingsContext';import {saveWhatsapp} from '../services/settings';import {msg} from '../services/errors';import {GENDERS} from '../services/genders';import AdminReceipt from '../components/AdminReceipt';
-import ContentStudio from '../components/ContentStudio';
+import ContentStudio from '../components/ContentStudio';import ProfitTab from '../components/ProfitTab';import {getCosts} from '../services/costs';import {summarize} from '../services/profit';
 const blank=()=>({name:'',brand:'',strap:'',price:'',description:'',inStock:true,featured:false,gender:'',demo:'',colors:[{name:'',images:[]}]});
 const NEXT={packaging:['out_for_delivery','Mark out for delivery'],out_for_delivery:['delivered','Mark delivered']};
-const TABS=['Overview','Watches','Orders','Customers','Content','Settings'];
+const TABS=['Overview','Watches','Orders','Profit','Customers','Content','Settings'];
 function Orders({o,act}){
  const [q,setQ]=useState('');
  const s=q.trim().replace(/^#/,'').toLowerCase();
@@ -21,8 +21,8 @@ function OrderRow({x,act}){return <div className="orow"><div className="ohead"><
  {act&&x.status==='pending'&&<div className="ctas left"><button className="pill" disabled={act.busy} onClick={()=>window.confirm('Confirm payment received? The customer gets a thank-you email.')&&act.confirm(x)}>Confirm payment</button><button className="pill ghost" onClick={()=>act.cancel(x)}>Cancel</button></div>}
  {act&&x.status==='paid'&&<div className="ctas left">{NEXT[stageOf(x)]&&<button className="pill" onClick={()=>act.next(x)}>{NEXT[stageOf(x)][1]}</button>}<button className="pill ghost" onClick={()=>act.studio(x)}>Content receipt</button></div>}</div>}
 export default function Admin(){
- const {whatsapp,setWhatsapp}=useSettings(),toast=useToast(),[tab,setTab]=useState('Overview'),[w,setW]=useState([]),[o,setO]=useState([]),[u,setU]=useState([]),[adm,setAdm]=useState([]),[f,setF]=useState(blank()),[eid,setEid]=useState(null),[busy,setBusy]=useState(false),[mail,setMail]=useState({subject:'',message:'',watchId:''}),[tpl,setTpl]=useState('blank'),[waIn,setWaIn]=useState(''),[rc,setRc]=useState(null);
- const load=()=>{listWatches().then(setW);allOrders().then(setO);listUsers().then(setU);listAdminIds().then(setAdm).catch(()=>{})};useEffect(load,[]);
+ const {whatsapp,setWhatsapp}=useSettings(),toast=useToast(),[tab,setTab]=useState('Overview'),[w,setW]=useState([]),[o,setO]=useState([]),[costs,setCosts]=useState({}),[u,setU]=useState([]),[adm,setAdm]=useState([]),[f,setF]=useState(blank()),[eid,setEid]=useState(null),[busy,setBusy]=useState(false),[mail,setMail]=useState({subject:'',message:'',watchId:''}),[tpl,setTpl]=useState('blank'),[waIn,setWaIn]=useState(''),[rc,setRc]=useState(null);
+ const load=()=>{listWatches().then(setW);allOrders().then(setO);listUsers().then(setU);listAdminIds().then(setAdm).catch(()=>{});getCosts().then(setCosts).catch(()=>{})};useEffect(load,[]);
  const set=k=>e=>setF({...f,[k]:e.target.value});
  const setCol=(i,p)=>setF(s=>({...s,colors:s.colors.map((c,n)=>n===i?{...c,...p}:c)}));
  async function up(i,files){setBusy(true);try{const urls=await Promise.all([...files].map(uploadImage));setF(s=>({...s,colors:s.colors.map((c,n)=>n===i?{...c,images:[...c.images,...urls]}:c)}))}catch(e){toast(msg(e,'We couldn’t upload that photo. Check your connection or try a smaller image.'))}setBusy(false)}
@@ -37,7 +37,7 @@ export default function Admin(){
  const run=async(fn,m)=>{try{await fn();toast(m);load()}catch(e){toast(msg(e,'That didn’t work. Please try again.'))}};
  const doConfirm=async x=>{setBusy(true);try{const j=await confirmOrder(x);toast(j.emailed===false?'Payment confirmed. Email not sent: '+j.emailError:'Payment confirmed. Thank-you email sent'+(j.receipt==='text'?' (receipt as text, picture failed: '+(j.receiptError||'unknown')+')':''));load()}catch(e){toast(e.message||'Failed')}setBusy(false)};
  const act={busy,confirm:doConfirm,next:x=>run(()=>setStage(x,NEXT[stageOf(x)][0]),'Order updated'),cancel:x=>run(()=>cancelOrder(x),'Cancelled'),studio:setRc};
- const cu=u.filter(x=>!adm.includes(x.id)),emails=cu.filter(x=>x.marketing!==false).map(x=>x.email).filter(Boolean),paid=o.filter(x=>x.status==='paid');
+ const cu=u.filter(x=>!adm.includes(x.id)),emails=cu.filter(x=>x.marketing!==false).map(x=>x.email).filter(Boolean),paid=o.filter(x=>x.status==='paid'),ps=summarize(paid,costs);
  async function send(test){
   if(!mail.subject||!mail.message)return toast('Add a subject and message');
   if(!test&&!window.confirm(`Send this to ${emails.length} customers?`))return;
@@ -48,7 +48,8 @@ export default function Admin(){
  async function saveWa(){const n=normalizePhone(waIn);if(!validPhone(n))return toast('Enter a valid phone number, for example 0803 123 4567.');setBusy(true);try{await saveWhatsapp(n);setWhatsapp(n);setWaIn('');toast('WhatsApp number updated everywhere')}catch(e){toast(msg(e,'We couldn’t save the number. Please try again.'))}setBusy(false)}
  return <div className="adm"><h1 className="title">Dashboard</h1>
   <div className="chips" role="tablist">{TABS.map(t=><button key={t} className={t===tab?'on':''} onClick={()=>setTab(t)}>{t}</button>)}</div>
-  {tab==='Overview'&&<><div className="stats"><div className="stat g"><span>Revenue</span><b>{naira(paid.reduce((s,x)=>s+x.total,0))}</b></div><div className="stat"><span>Paid orders</span><b>{paid.length}</b></div><div className="stat"><span>Awaiting payment</span><b>{o.filter(x=>x.status==='pending').length}</b></div><div className="stat"><span>Customers</span><b>{cu.length}</b></div><div className="stat"><span>Watches</span><b>{w.length}</b></div></div>
+  {tab==='Overview'&&<><div className="stats"><div className="stat g"><span>Profit</span><b>{naira(ps.profit)}</b></div><div className="stat"><span>Sales</span><b>{naira(ps.sales)}</b></div><div className="stat"><span>Paid orders</span><b>{paid.length}</b></div><div className="stat"><span>Awaiting payment</span><b>{o.filter(x=>x.status==='pending').length}</b></div><div className="stat"><span>Customers</span><b>{cu.length}</b></div><div className="stat"><span>Watches</span><b>{w.length}</b></div></div>
+   {ps.missing>0&&<p className="muted" style={{margin:'0 0 12px'}}>Profit leaves out {ps.missing} paid order{ps.missing===1?'':'s'} with missing watch costs. Add them in the Profit tab.</p>}
    <div className="panel"><h2>Recent orders</h2>{!o.length&&<p className="muted">No orders yet.</p>}{o.slice(0,5).map(x=><OrderRow key={x.id} x={x}/>)}</div></>}
   {tab==='Watches'&&<><div className="panel"><h2>{eid?'Edit watch':'Add a watch'}</h2>
    <div className="fgrid"><input placeholder="Name" value={f.name} onChange={set('name')}/><input placeholder="Brand" value={f.brand} onChange={set('brand')}/><input placeholder="Strap" value={f.strap} onChange={set('strap')}/><input placeholder="Price (₦)" type="number" value={f.price} onChange={set('price')}/></div>
@@ -67,6 +68,7 @@ export default function Admin(){
     <a href="#" onClick={e=>{e.preventDefault();run(()=>updateWatch(x.id,{featured:!x.featured}),x.featured?'Removed from The latest':'Added to The latest')}}>{x.featured?'★ Unfeature':'☆ Feature'}</a><a href="#" onClick={e=>{e.preventDefault();edit(x)}}>Edit</a><a href="#" onClick={e=>{e.preventDefault();run(()=>updateWatch(x.id,{inStock:!x.inStock}),'Updated')}}>{x.inStock?'Mark sold out':'Restock'}</a><a href="#" onClick={e=>{e.preventDefault();window.confirm('Delete this watch?')&&run(()=>deleteWatch(x.id),'Deleted')}}>Delete</a></div>)}</div></>}
   {tab==='Orders'&&<Orders o={o} act={act}/>}
   {tab==='Content'&&<ContentStudio w={w}/>}
+  {tab==='Profit'&&<ProfitTab w={w} o={o} costs={costs} reload={load}/>}
   {tab==='Customers'&&<><div className="panel"><h2>Send a promotion</h2><p className="muted">Goes to {emails.length} subscribed customers. Unsubscribed customers are skipped.</p>
    <div className="fgrid"><select aria-label="Template" value={tpl} onChange={e=>pickTpl(e.target.value,mail.watchId)}>{TEMPLATES.map(t=><option key={t.id} value={t.id}>{t.label}</option>)}</select>
    {TEMPLATES.find(t=>t.id===tpl)?.watch&&<select aria-label="Watch" value={mail.watchId} onChange={e=>pickTpl(tpl,e.target.value)}><option value="">Choose a watch…</option>{w.map(x=><option key={x.id} value={x.id}>{x.name}</option>)}</select>}</div>

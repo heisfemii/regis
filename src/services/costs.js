@@ -1,0 +1,3 @@
+// Private cost data lives in the admin-only "costs" collection. These helpers snapshot an order's cost when it is paid.
+export const readCosts=(tx,db,items)=>Promise.all(items.map(i=>tx.get(db.collection('costs').doc(i.id))));
+export function costFields(snaps,items){let costTotal=0,costKnown=true;snaps.forEach((s,k)=>{const c=s.exists?s.data():null;if(!c||c.cost==null||c.cost===''||isNaN(c.cost)){costKnown=false;return}costTotal+=((+c.cost||0)+(+c.delivery||0))*(items[k].qty||1)});return{costTotal,costKnown}}

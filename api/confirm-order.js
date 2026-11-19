@@ -1,3 +1,4 @@
+import {readCosts,costFields} from './_cost.js';
 import {init} from './_admin.js';import {fn,esc,naira,settings,layout,para,button,transporter,footText,SITE} from './_mail.js';import {makeReceipt} from './_receipt.js';
 const RATE=0.01;
 const htmlReceipt=(o,id,earned)=>`<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;border:1px solid #e4e0d6;border-radius:16px;font-size:15px"><tr><td style="padding:16px 20px;font-weight:700">Receipt #${esc(id)}</td></tr>${o.items.map(i=>`<tr><td style="padding:8px 20px;border-top:1px solid #eee">${esc(i.name)} (${esc(i.color)}) x${i.qty}<span style="float:right">${esc(naira(i.price*i.qty))}</span></td></tr>`).join('')}<tr><td style="padding:12px 20px;border-top:1px solid #e4e0d6;font-weight:700">Total<span style="float:right">${esc(naira(o.total))}</span></td></tr>${earned?`<tr><td style="padding:0 20px 16px;color:#4a5232">You earned ${esc(naira(earned))} in credits.</td></tr>`:''}</table>`;
@@ -14,8 +15,9 @@ export default async function handler(req,res){
    if(o.status==='cancelled')throw new Error('This order was cancelled');
    const uref=db.collection('users').doc(o.uid),u=await tx.get(uref);
    if((u.data()?.credits||0)<o.creditsApplied)throw new Error('Customer no longer has enough credits for this order');
+   const cf=costFields(await readCosts(tx,db,o.items),o.items);
    const earned=Math.floor(o.total*RATE);
-   tx.update(ref,{status:'paid',stage:'packaging',creditsEarned:earned,paidAt:F.serverTimestamp(),stageUpdatedAt:F.serverTimestamp()});
+   tx.update(ref,{...cf,status:'paid',stage:'packaging',creditsEarned:earned,paidAt:F.serverTimestamp(),stageUpdatedAt:F.serverTimestamp()});
    tx.update(uref,{credits:F.increment(earned-o.creditsApplied)});
    return {earned,o};});
   if(out.already)return res.json({ok:true,already:true});
