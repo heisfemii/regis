@@ -2,7 +2,7 @@ import {cover} from './watches';
 import {naira} from './config';
 import {blank} from './contentArt';
 // Offline idea generator: season-aware promos, catalogue spotlights, tips, quotes and reel scripts.
-const HT='#regiswatch #watchesnigeria #watchesofinstagram #wristcheck #nigerianbusiness',CTA='Shop: regiswatch.vercel.app · @regiswatch.ng';
+const HT='#regiswatch #watchesnigeria #watchesofinstagram #wristcheck #nigerianbusiness',CTA='Shop: regiswatch.com · @regiswatch.ng';
 const rng=s=>()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
 const shuf=(a,r)=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b};
 const cov=w=>w?cover(w):'',lab=x=>`${x.name} · ${naira(x.price)}`;

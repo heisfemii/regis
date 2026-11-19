@@ -33,7 +33,7 @@ export async function drawContent(s,mk=()=>document.createElement('canvas'),ld=l
  x.save();x.globalAlpha=.35;x.strokeStyle=P.acc;x.lineWidth=2;x.strokeRect(28,28,W-56,H-56);x.restore();
  const fy=H-(st?250:84),top=st?300:190,bot=fy-60;
  T('REGIS',68,72,st?226:126,P.hi,400,'Anton','left');T('@regiswatch.ng',26,W-72,st?222:122,P.acc,500,'Inter','right');
- const dup=/curated watches/i.test(s.sub||'');if(!dup)T('Curated watches, delivered across Nigeria',30,W/2,fy,P.hi,500);T('regiswatch.vercel.app',26,W/2,dup?fy+10:fy+40,P.acc,600);
+ const dup=/curated watches/i.test(s.sub||'');if(!dup)T('Curated watches, delivered across Nigeria',30,W/2,fy,P.hi,500);T('regiswatch.com',26,W/2,dup?fy+10:fy+40,P.acc,600);
  const chip=(t,Y)=>{if(!t)return 0;const u=t.toUpperCase();x.font='600 26px Inter,sans-serif';const w=x.measureText(u).width+64;x.strokeStyle=P.acc;x.lineWidth=2;rr(W/2-w/2,Y,w,56,28);x.stroke();T(u,26,W/2,Y+37,P.acc,600);return 56};
  const ticks=(cx,cy,R)=>{for(let i=0;i<60;i++){const a=i/60*Math.PI*2,mj=i%5===0,r1=R-14-R*(mj?.12:.06),r2=R-14;x.strokeStyle=mj?P.hi:P.acc+'88';x.lineWidth=mj?3.5:1.6;x.lineCap='round';x.beginPath();x.moveTo(cx+Math.sin(a)*r1,cy-Math.cos(a)*r1);x.lineTo(cx+Math.sin(a)*r2,cy-Math.cos(a)*r2);x.stroke()}};
  const dial=(cx,cy,R,im,txt,mono='R')=>{

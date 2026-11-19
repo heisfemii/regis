@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-export const SITE=()=>process.env.SITE_URL||'https://regiswatch.vercel.app';
+export const SITE=()=>process.env.SITE_URL||'https://regiswatch.com';
 export const EMAIL='inbox.regis@gmail.com';
 export const fn=n=>{const f=(n||'').trim().split(/\s+/)[0]||'there';return f.length>1&&f===f.toUpperCase()?f[0]+f.slice(1).toLowerCase():f};
 export const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

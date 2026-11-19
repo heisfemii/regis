@@ -52,8 +52,8 @@ export async function drawStudio(o,{format='feed',nameMode='first',prices=true,c
  x.strokeStyle=G.paper;x.lineWidth=3;x.beginPath();x.arc(0,0,74,0,7);x.stroke();x.lineWidth=1.5;x.beginPath();x.arc(0,0,40,0,7);x.stroke();
  ring(x,0,0,56,'REGIS  ·  SOLD  ·  ',14,G.paper,600);T('SOLD',27,0,10,G.paper,400,'Anton','center');x.restore();
  x.restore();
- T('Curated watches, delivered across Nigeria',30,W/2,H-80,G.paper,500,'Inter','center');T('regiswatch.vercel.app',26,W/2,H-40,G.sage,600,'Inter','center');
+ T('Curated watches, delivered across Nigeria',30,W/2,H-80,G.paper,500,'Inter','center');T('regiswatch.com',26,W/2,H-40,G.sage,600,'Inter','center');
  return c}
 export function captionFor(o,{nameMode='first',prices=true,city=''}={}){
  const who=nameFor(o.customer,nameMode),n=(o.items||[]).length,w=n>1?`${n} watches`:(o.items?.[0]?.name||'A new piece');
- return `Another one found its wrist.\n\n${w} ${n>1?'are':'is'} now with ${who||'a new owner'}${city?` in ${city}`:''}.${prices?` ${naira(o.total)}, paid in full.`:''}\n\nThank you for trusting Regis.\n\nFind yours: @regiswatch.ng · regiswatch.vercel.app\n\n#regis #regiswatch #watchesnigeria #watchesofinstagram #nigeriawatches #watchcollector #wristcheck`}
+ return `Another one found its wrist.\n\n${w} ${n>1?'are':'is'} now with ${who||'a new owner'}${city?` in ${city}`:''}.${prices?` ${naira(o.total)}, paid in full.`:''}\n\nThank you for trusting Regis.\n\nFind yours: @regiswatch.ng · regiswatch.com\n\n#regis #regiswatch #watchesnigeria #watchesofinstagram #nigeriawatches #watchcollector #wristcheck`}
