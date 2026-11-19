@@ -1,3 +1,4 @@
-// Private cost data lives in the admin-only "costs" collection. These helpers snapshot an order's cost when it is paid.
-export const readCosts=(tx,db,items)=>Promise.all(items.map(i=>tx.get(db.collection('costs').doc(i.id))));
-export function costFields(snaps,items){let costTotal=0,costKnown=true;snaps.forEach((s,k)=>{const c=s.exists?s.data():null;if(!c||c.cost==null||c.cost===''||isNaN(c.cost)){costKnown=false;return}costTotal+=((+c.cost||0)+(+c.delivery||0))*(items[k].qty||1)});return{costTotal,costKnown}}
+import {collection,getDocs,doc,setDoc,serverTimestamp} from 'firebase/firestore';import {db} from './firebase';
+// Private per-watch costs (admin-only collection "costs", keyed by watch id): cost = what you paid, delivery = what it cost to get it to you.
+export const getCosts=async()=>Object.fromEntries((await getDocs(collection(db,'costs'))).docs.map(d=>[d.id,d.data()]));
+export const saveCost=(id,{cost,delivery})=>setDoc(doc(db,'costs',id),{cost:Number(cost),delivery:Number(delivery)||0,updatedAt:serverTimestamp()});
