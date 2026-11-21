@@ -63,4 +63,10 @@ export function buildIdeas(w=[],now=new Date(),seed=1){
  shuf(SCRIPTS,r).slice(0,3).forEach(s=>evergreen.push(idea('Reel',s[0],null,cap(s[2]),s[1])));
  return [...out,...evergreen];
 }
-export const captionOf=s=>{const l=[s.headline,s.sub].filter(Boolean).join('\n');return cap(l||'New from Regis.')};
+export const captionOf=s=>{
+ const ls=(s.labels||[]).filter((x,i)=>x&&s.imgs?.[i]),h=(s.headline||'').trim();let b;
+ if(s.type==='spotlight')b=ls.length>1?`${h||'New on the shelf'}\n\n${ls.join('\n')}`:`${h||'This one'} is on the shelf.${s.price?`\n\n${s.price}`:''}`;
+ else if(s.type==='promo')b=[h,s.sub,ls.length>1&&ls.join('\n'),s.code,s.deadline&&`Ends ${s.deadline}`].filter(Boolean).join('\n\n');
+ else if(s.type==='versus')b=`${h||'Which one’s yours?'}\n\n${ls.join('\n')}\n\nTell us in the comments.`;
+ else b=[h,s.sub].filter(Boolean).join('\n\n');
+ return cap(b||'New from Regis.')};
