@@ -1,8 +1,9 @@
 import {collection,getDocs,getDoc,addDoc,updateDoc,deleteDoc,doc,serverTimestamp,query,orderBy} from 'firebase/firestore';
 import {db} from './firebase';
 const m=d=>({id:d.id,...d.data()});
-let C=null;export const cached=()=>C;
-export const listWatches=async()=>C||(C=(await getDocs(query(collection(db,'watches'),orderBy('createdAt','desc')))).docs.map(m));
+let C=null,P=null;export const cached=()=>C;
+// One shared request: the app, home and shop all ask at once, so they must not each hit Firestore.
+export const listWatches=()=>C?Promise.resolve(C):P||(P=getDocs(query(collection(db,'watches'),orderBy('createdAt','desc'))).then(s=>(C=s.docs.map(m))).finally(()=>{P=null}));
 export const getWatch=async id=>{const s=await getDoc(doc(db,'watches',id));return s.exists()?m(s):null};
 export const addWatch=w=>addDoc(collection(db,'watches'),{...w,createdAt:serverTimestamp()}).then(r=>{C=null;return r});
 export const updateWatch=(id,w)=>updateDoc(doc(db,'watches',id),w).then(r=>{C=null;return r});

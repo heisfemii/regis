@@ -1,0 +1,2 @@
+// Serve Cloudinary photos resized and in the best format (WebP/AVIF) for the visitor's browser. Other URLs pass through unchanged.
+export const opt=(u,w=700)=>u&&u.includes('res.cloudinary.com')&&u.includes('/upload/')&&!/\/upload\/[^/]*(f_auto|q_auto|w_\d)/.test(u)?u.replace('/upload/',`/upload/f_auto,q_auto,w_${w},c_limit/`):u;

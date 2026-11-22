@@ -1,3 +1,4 @@
+import {opt} from '../services/cdn';
 import {useState} from 'react';import {useNavigate,Link} from 'react-router-dom';
 import {useCart} from '../context/CartContext';import {useAuth} from '../context/AuthContext';import {useToast} from '../context/ToastContext';
 import {createOrder,whatsappLink} from '../services/orders';import {getWatch} from '../services/watches';import {naira} from '../services/config';import {msg,withTimeout} from '../services/errors';import {useSettings} from '../context/SettingsContext';
@@ -19,7 +20,7 @@ export default function Cart(){
    clear();window.location.href=whatsappLink(o,whatsapp);
   }catch(e){toast(msg(e,'We couldn’t place your order. Please try again.'));setBusy(false)}}
  return <div className="box wide"><h2>Your cart</h2>
-  {items.map(i=><div className="arow" key={i.key}>{i.image?<img className="thumb" src={i.image} alt=""/>:<div className="thumb"/>}
+  {items.map(i=><div className="arow" key={i.key}>{i.image?<img className="thumb" src={opt(i.image,160)} loading="lazy" decoding="async" alt=""/>:<div className="thumb"/>}
    <div className="grow"><b>{i.name}</b><p className="muted">{i.color} · {i.strap}</p></div>
    <div className="qty"><button aria-label="Decrease quantity" onClick={()=>setQty(i.key,i.qty-1)}>−</button><span>{i.qty}</span><button aria-label="Increase quantity" onClick={()=>setQty(i.key,i.qty+1)}>+</button></div>
    <span>{naira(i.price*i.qty)}</span><a href="#" aria-label="Remove" onClick={e=>{e.preventDefault();remove(i.key)}}>✕</a></div>)}

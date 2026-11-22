@@ -1,9 +1,10 @@
-import {useEffect,useState} from 'react';
+import {useEffect,useState,lazy,Suspense} from 'react';import {opt} from './services/cdn';
 import {InstagramIcon,XIcon} from './components/Social';
 import {Routes,Route,Link,Navigate,useLocation} from 'react-router-dom';
 import {useAuth} from './context/AuthContext';import {useCart} from './context/CartContext';
-import Home from './pages/Home';import Shop from './pages/Shop';import Watch from './pages/Watch';import Cart from './pages/Cart';import Login from './pages/Login';import Account from './pages/Account';import Admin from './pages/Admin';import Receipt from './pages/Receipt';import NotFound from './pages/NotFound';
+import Home from './pages/Home';import Shop from './pages/Shop';import Watch from './pages/Watch';import NotFound from './pages/NotFound';
 import Offline from './components/Offline';import Loader from './components/Loader';import ErrorBoundary from './components/ErrorBoundary';import {listWatches,cover} from './services/watches';import {preload} from './services/preload';import {SUPPORT_EMAIL} from './services/config';import SettingsProvider,{useSettings} from './context/SettingsContext';import CookieNotice from './components/CookieNotice';import Legal from './pages/Legal';
+const Cart=lazy(()=>import('./pages/Cart')),Login=lazy(()=>import('./pages/Login')),Account=lazy(()=>import('./pages/Account')),Admin=lazy(()=>import('./pages/Admin')),Receipt=lazy(()=>import('./pages/Receipt'));
 function Shell(){
  const {whatsapp}=useSettings(),{user,isAdmin,logout,loading}=useAuth(),{count}=useCart(),{pathname,hash}=useLocation();
  useEffect(()=>{if(!hash){window.scrollTo(0,0);return}let n=0;const t=setInterval(()=>{const el=document.getElementById(hash.slice(1));if(el){el.scrollIntoView({behavior:'smooth'});clearInterval(t)}else if(++n>30)clearInterval(t)},100);return()=>clearInterval(t)},[pathname,hash]);
@@ -11,9 +12,8 @@ function Shell(){
   on();window.addEventListener('scroll',on,{passive:true});window.addEventListener('resize',on);return()=>{window.removeEventListener('scroll',on);window.removeEventListener('resize',on)}},[]);
  useEffect(()=>{const m=e=>{const c=e.target.closest?.('.card,.rcard,.feat');if(!c)return;const r=c.getBoundingClientRect();c.style.setProperty('--mx',e.clientX-r.left+'px');c.style.setProperty('--my',e.clientY-r.top+'px')};
   document.addEventListener('mousemove',m);return()=>document.removeEventListener('mousemove',m)},[]);
- const [booted,setBooted]=useState(false);
- useEffect(()=>{listWatches().then(l=>preload(['/hero-watch.png',...l.slice(0,30).map(x=>cover(x))],8000)).catch(()=>{}).finally(()=>setBooted(true))},[]);
- if(loading||!booted)return <Loader/>;
+ useEffect(()=>{listWatches().then(l=>preload(l.slice(0,8).map(x=>opt(cover(x),700)),0)).catch(()=>{})},[]);
+ if(loading)return <Loader/>;
  const out=<a href="#" onClick={e=>{e.preventDefault();logout()}}>Logout</a>;
  return <>
   <div className="progress" aria-hidden="true"/><Offline/>
@@ -25,12 +25,12 @@ function Shell(){
     :<>{user?<><Link to="/account">Account</Link>{out}</>:<Link to="/login">Log in</Link>}
      <Link to="/cart" className="bag" aria-label={`Cart, ${count} items`}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 8h12l1 12H5z M9 8a3 3 0 016 0"/></svg>{count>0&&<span className="dot" key={count}>{count}</span>}</Link></>}
    </div></div></header>
-  <div key={pathname} className="page"><ErrorBoundary><Routes>
+  <div key={pathname} className="page"><ErrorBoundary><Suspense fallback={<div style={{minHeight:'60vh'}} aria-busy="true"/>}><Routes>
    <Route path="/" element={<Home/>}/><Route path="/shop" element={<Shop/>}/><Route path="/watch/:id" element={<Watch/>}/><Route path="/cart" element={<Cart/>}/>
    <Route path="/login" element={user?<Navigate to={isAdmin?'/admin':'/account'} replace/>:<Login/>}/>
    <Route path="/account" element={user?<Account/>:<Navigate to="/login"/>}/><Route path="/receipt/:id" element={user?<Receipt/>:<Navigate to="/login"/>}/>
    <Route path="/admin" element={isAdmin?<Admin/>:<Navigate to="/"/>}/><Route path="/terms" element={<Legal doc="terms"/>}/><Route path="/privacy" element={<Legal doc="privacy"/>}/><Route path="/refunds" element={<Legal doc="refunds"/>}/><Route path="*" element={<NotFound/>}/>
-  </Routes></ErrorBoundary></div>
+  </Routes></Suspense></ErrorBoundary></div>
   <footer><div className="fwrap">
    <p className="fnote">Prices are in Naira (₦). Payment is confirmed with you directly on WhatsApp.</p>
    <div className="fcols">
