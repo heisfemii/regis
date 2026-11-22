@@ -1,2 +1,3 @@
+const HIDE={position:'absolute',width:1,height:1,padding:0,margin:-1,overflow:'hidden',clip:'rect(0,0,0,0)',whiteSpace:'nowrap',border:0};
 export default function Split({text,base=0,step=40}){
- return <><span className="vh">{text}</span><span aria-hidden="true">{text.split(' ').map((w,i)=><span className="wd" key={i}><span style={{animationDelay:base+i*step+'ms'}}>{w}&nbsp;</span></span>)}</span></>;}
+ return <><span style={HIDE}>{text}</span><span aria-hidden="true">{text.split(' ').map((w,i)=><span className="wd" key={i}><span style={{animationDelay:base+i*step+'ms'}}>{w}&nbsp;</span></span>)}</span></>;}
