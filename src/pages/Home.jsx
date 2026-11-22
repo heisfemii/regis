@@ -4,18 +4,18 @@ import Reveal from '../components/Reveal';import Grimoire from '../components/Gr
 const FEATS=[['shield','Known brands,\nhand picked.','Every watch is listed here, with clear colours and details.'],['truck','Follow every step.','See your order move from processing to packaging to out for delivery, right in your account.'],['star','Credits that come back.','Earn credits on every order and spend them on your next one.']];
 const STEPS=[['Pick','Choose a watch and your favourite colour.'],['Order','Send your order on WhatsApp and pay us directly.'],['Track','Follow packaging and delivery from your account, and earn credits.']];
 export default function Home(){
- const {user,profile}=useAuth(),[w,setW]=useState(cached()||[]);
- useEffect(()=>{listWatches().then(setW).catch(()=>{})},[]);
+ const {user,profile}=useAuth(),[w,setW]=useState(cached()||[]),[ready,setReady]=useState(!!cached());
+ useEffect(()=>{listWatches().then(l=>{setW(l);setReady(true)}).catch(()=>setReady(true))},[]);
  const latest=w.filter(x=>x.featured).slice(0,8);
  const st=n=>({'--d':n*120+'ms'});
  return <>
   <section className="hero">
-   <h1><Split text="Known brands."/><br/><Split text="Carefully sourced." base={250}/></h1>
+   <h1><Split text="Known brands."/><br/><Split text="Carefully sourced." base={120}/></h1>
    <p className="sub st" style={st(4)}>Affordable. Curated. Yours.</p>
-   <div className="ctas st" style={st(5)}><Link className="pill" to="/shop">Shop now</Link><a className="tlink" href="#how">Learn more ›</a></div>
+   <div className="ctas st" style={st(5)}><Link className="pill" to="/shop">Shop now</Link><a className="tlink" href="#how">How it works ›</a></div>
   </section>
-  {latest.length>0&&<section id="latest" className="sec" style={{paddingBottom:40}}><div className="wrap"><Reveal><h2 className="title">The latest.</h2><p className="lead">Take a look at what’s new.</p></Reveal></div>
-   <div className="wrap"><Reveal><Grimoire items={latest}/></Reveal></div></section>}
+  {(!ready||latest.length>0)&&<section id="latest" className="sec" style={{paddingBottom:40}}><div className="wrap"><Reveal><h2 className="title">The latest.</h2><p className="lead">Take a look at what’s new.</p></Reveal></div>
+   <div className="wrap">{latest.length>0?<Reveal><Grimoire items={latest}/></Reveal>:<div className="skel gskel" aria-hidden="true"/>}</div></section>}
   <section className="cta-end"><div className="wrap"><Reveal><h2 className="title big">Find your watch.</h2><Link className="pill" to="/shop">Shop the collection</Link></Reveal></div></section>
   <section className="sec"><div className="wrap"><Reveal><h2 className="title">Why Regis?</h2></Reveal>
    <div className="three">{FEATS.map(([i,t,d],n)=><Reveal key={t} delay={n*100}><div className="feat"><Icon n={i}/><h3>{t}</h3><p className="muted">{d}</p></div></Reveal>)}</div></div></section>

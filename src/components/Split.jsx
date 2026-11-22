@@ -1,2 +1,2 @@
-export default function Split({text,base=0,step=80}){
- return <span aria-label={text}>{text.split(' ').map((w,i)=><span className="wd" key={i} aria-hidden="true"><span style={{animationDelay:base+i*step+'ms'}}>{w}&nbsp;</span></span>)}</span>;}
+export default function Split({text,base=0,step=40}){
+ return <><span className="vh">{text}</span><span aria-hidden="true">{text.split(' ').map((w,i)=><span className="wd" key={i}><span style={{animationDelay:base+i*step+'ms'}}>{w}&nbsp;</span></span>)}</span></>;}

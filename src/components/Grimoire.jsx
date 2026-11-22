@@ -1,5 +1,5 @@
 import {useEffect,useLayoutEffect,useRef,useState} from 'react';import {Link} from 'react-router-dom';
-import {naira} from '../services/config';import {cover} from '../services/watches';import Pic from './Pic';import '../grimoire.css';
+import {naira} from '../services/config';import {cover} from '../services/watches';import {opt} from '../services/cdn';import Pic from './Pic';import '../grimoire.css';
 const AUTO=7;
 const BITS=Array.from({length:10},(_,i)=>({y:6+i*9,s:5+(i*7)%7,bx:-(30+(i*17)%60),by:((i*37)%90)-45,br:((i*83)%360)-180}));
 const Card=({w})=><><span className="eyebrow">{w.brand||'New'}</span><b className="gname">{w.name}</b><Pic w={w}/><span className="gprice">From {naira(w.price)}</span></>;
@@ -11,7 +11,7 @@ export default function Grimoire({items}){
  const rot=useRef(-8),vel=useRef(0),selR=useRef(null),down=useRef(false),hover=useRef(false),moved=useRef(false),drag=useRef({x:0,t:0,id:0}),fx=useRef({rect:null,dir:0});
  selR.current=sel;
  const apply=()=>{if(book.current)book.current.style.transform=`translateY(-8px) rotateX(-9deg) rotateY(${rot.current.toFixed(2)}deg)`};
- useEffect(()=>{items.forEach(x=>{const s=cover(x);if(s){const i=new Image();i.src=s}})},[items]);
+ useEffect(()=>{items.forEach(x=>{const s=opt(cover(x),700);if(s){const i=new Image();i.src=s}})},[items]);
  // opening + slow idle turn; only runs while the book is on screen
  useEffect(()=>{
   const el=stage.current;if(!el)return undefined;
