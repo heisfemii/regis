@@ -1,0 +1,23 @@
+# Regis
+
+> Regis is an online store in Nigeria that sells curated watches from known brands, delivered across Nigeria. Customers browse watches at regiswatch.com and place their orders on WhatsApp.
+
+## Key pages
+
+- [Shop all watches](https://regiswatch.com/shop): every watch with photos, colours and prices in naira
+- [Terms](https://regiswatch.com/terms): terms of sale
+- [Refunds](https://regiswatch.com/refunds): refund information
+- [Privacy](https://regiswatch.com/privacy): privacy policy
+- [Sitemap](https://regiswatch.com/sitemap.xml): every watch page
+
+## How ordering works
+
+1. Pick a watch and colour on regiswatch.com.
+2. Send the order on WhatsApp and pay Regis directly.
+3. Follow packaging and delivery from your account. Orders earn credits for the next purchase.
+
+## Contact
+
+- Email: inbox.regis@gmail.com
+- Instagram: https://www.instagram.com/regiswatch.ng/
+- X: https://x.com/Regis_watches
