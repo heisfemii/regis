@@ -1,6 +1,6 @@
 import {cover} from './watches';
 import {naira} from './config';
-import {blank} from './contentArt';
+import {blank,STARTERS} from './contentArt';
 // Offline idea generator: season-aware promos, catalogue spotlights, tips, quotes and reel scripts.
 const HT='#regiswatch #watchesnigeria #watchesofinstagram #wristcheck #nigerianbusiness',CTA='Shop: regiswatch.com · @regiswatch.ng';
 const rng=s=>()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
@@ -10,7 +10,7 @@ const cap=(body,extra='')=>`${body}\n\n${extra?extra+'\n\n':''}${CTA}\n\n${HT}`;
 export function upcoming(now=new Date()){
  const t0=new Date(now.getFullYear(),now.getMonth(),now.getDate()),ev=[];
  for(const y of [t0.getFullYear(),t0.getFullYear()+1]){
-  const bf=new Date(y,10,1);while(bf.getDay()!==5)bf.setDate(bf.getDate()+1);bf.setDate(bf.getDate()+21);
+  const bf=new Date(y,10,1);let th=0;while(!(bf.getDay()===4&&++th===4))bf.setDate(bf.getDate()+1);bf.setDate(bf.getDate()+1);
   ev.push({k:'bf',name:'Black Friday',d:bf},{k:'xmas',name:'Christmas',d:new Date(y,11,25)},{k:'ny',name:'New Year',d:new Date(y+1,0,1)},{k:'val',name:'Valentine’s Day',d:new Date(y,1,14)});
  }
  return ev.filter(e=>e.d>=t0).sort((a,b)=>a.d-b.d).map(e=>({...e,days:Math.round((e.d-t0)/864e5)})).filter(e=>e.days<=50);
@@ -39,20 +39,21 @@ export function buildIdeas(w=[],now=new Date(),seed=1){
  const out=[];
  for(const e of upcoming(now)){
   if(e.k==='xmas'){
-   out.push(idea('Seasonal','Christmas countdown',{type:'promo',theme:'christmas',tag:'Countdown',headline:`${e.days} days to Christmas`,sub:'Still deciding? A watch never goes out of style.',code:'DM TO ORDER',imgs:[cov(P[0]),'']},cap('Christmas is almost here. Give a gift that gets checked a hundred times a day.')));
+   out.push(idea('Seasonal','Christmas countdown',{type:'countdown',theme:'christmas',tag:'Countdown',headline:String(e.days),sub:`${e.days===1?'Day':'Days'} to Christmas`,deadline:'A watch never goes out of style'},cap('Christmas is almost here. Give a gift that gets checked a hundred times a day.')));
    const u=P.filter(x=>x.price<=cut).slice(0,3),g=u.length?u:P.slice(0,3);
    out.push(idea('Seasonal','Gifts under a budget',{type:'promo',theme:'christmas',tag:'Christmas edit',headline:`Gifts under ${naira(cut)}`,sub:'Pieces that look like they cost more.',imgs:g.map(cov),labels:g.map(lab)},cap(`Christmas gifts under ${naira(cut)}, picked for people who care about the details.`)));
    const a=by('men')[0]||P[0],b=by('women')[0]||P[1];
    out.push(idea('Seasonal','Gift for him or for her',{type:'versus',theme:'christmas',headline:'For him or for her?',imgs:[cov(a),cov(b)],labels:[a?`${a.name} · ${naira(a.price)}`:'',b?`${b.name} · ${naira(b.price)}`:'']},cap('Stuck on a gift? Pick a side and tell us who you are shopping for.')));
    out.push(idea('Seasonal','Christmas gift pick',{type:'spotlight',theme:'christmas',tag:'Gift pick',headline:P[1]?.name||'',sub:'Wrapped and ready to go.',price:P[1]?naira(P[1].price):'',imgs:[cov(P[1]),'']},cap(`${P[1]?.name||'This one'} is on the Christmas shortlist.`)));
+   out.push(idea('Seasonal','Christmas greeting',{type:'greeting',theme:'christmas',tag:'From all of us at Regis',headline:'Merry Christmas',sub:'Thank you for being part of the Regis family.'},cap('Merry Christmas from all of us at Regis. Thank you for being part of the family.')));
    out.push(idea('Seasonal','Christmas quote',{type:'quote',theme:'christmas',headline:'The best gifts get checked a hundred times a day.',sub:'REGIS · CHRISTMAS'},cap('The best gifts get checked a hundred times a day.')));
   }
   if(e.k==='bf'){
    out.push(idea('Seasonal','Black Friday teaser',{type:'promo',theme:'noir',tag:'Teaser',headline:'Black Friday',sub:'Something special is coming. Turn on post notifications.',deadline:e.d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}),imgs:[cov(P[2]||P[0]),'']},cap('Black Friday is coming. Turn on post notifications so you do not miss it.')));
-   out.push(idea('Seasonal','Black Friday countdown',{type:'promo',theme:'noir',tag:'Countdown',headline:`${e.days} days to go`,sub:'Get your wishlist ready.'},cap('Get your wishlist ready.')));
+   out.push(idea('Seasonal','Black Friday countdown',{type:'countdown',theme:'noir',tag:'Countdown',headline:String(e.days),sub:`${e.days===1?'Day':'Days'} to Black Friday`,deadline:'Get your wishlist ready'},cap('Get your wishlist ready.')));
   }
-  if(e.k==='ny')out.push(idea('Seasonal','New year, on time',{type:'quote',theme:'noir',headline:'Start the year on time.',sub:'REGIS · NEW YEAR'},cap('Start the year on time.')));
-  if(e.k==='val')out.push(idea('Seasonal','His and hers',{type:'versus',theme:'christmas',headline:'His or hers?',imgs:[cov(by('men')[0]||P[0]),cov(by('women')[0]||P[1])]},cap('Say it with something that keeps time.')));
+  if(e.k==='ny')out.push(idea('Seasonal','New year greeting',{type:'greeting',theme:'noir',tag:'From all of us at Regis',headline:'Happy New Year',sub:'Here is to a year on time.'},cap('Happy New Year from all of us at Regis. Here is to a year on time.')),idea('Seasonal','New year, on time',{type:'quote',theme:'noir',headline:'Start the year on time.',sub:'REGIS · NEW YEAR'},cap('Start the year on time.')));
+  if(e.k==='val')out.push(idea('Seasonal','Valentine greeting',{type:'greeting',theme:'christmas',tag:'From all of us at Regis',headline:'Happy Valentine’s Day',sub:'Give a gift that keeps time.'},cap('Happy Valentine’s Day from all of us at Regis.')),idea('Seasonal','His and hers',{type:'versus',theme:'christmas',headline:'His or hers?',imgs:[cov(by('men')[0]||P[0]),cov(by('women')[0]||P[1])]},cap('Say it with something that keeps time.')));
  }
  const evergreen=[],nw=pool.slice(0,3);
  if(nw.length>1)evergreen.push(idea('Showcase','New arrivals',{type:'spotlight',theme:'olive',tag:'New arrivals',headline:'New on the shelf',sub:'Fresh pieces, just in.',imgs:nw.map(cov),labels:nw.map(lab)},cap('New arrivals are in. Which one would you pick?')));
@@ -61,6 +62,12 @@ export function buildIdeas(w=[],now=new Date(),seed=1){
  shuf(TIPS,r).slice(0,2).forEach(t=>evergreen.push(idea('Educate',t[1],{type:'tip',theme:'olive',tag:t[0],headline:t[1],sub:t[2]},cap(t[2]))));
  shuf(QUOTES,r).slice(0,2).forEach(q=>evergreen.push(idea('Quote',q[0],{type:'quote',theme:r()>.5?'noir':'olive',headline:q[0],sub:'REGIS'},cap(q[0]))));
  shuf(SCRIPTS,r).slice(0,3).forEach(s=>evergreen.push(idea('Reel',s[0],null,cap(s[2]),s[1])));
+ const x1=P[0],mk=(cat,title,spec)=>idea(cat,title,spec,captionOf({...blank(spec.type),...spec}));
+ evergreen.push(mk('Educate','How to order',{type:'steps',theme:'olive',...STARTERS.steps}));
+ evergreen.push(mk('Engage','Weekend greeting',{type:'greeting',theme:'olive',...STARTERS.greeting}));
+ evergreen.push(mk('Engage','Customer review (use a real one)',{type:'testimonial',theme:'olive',...STARTERS.testimonial,imgs:[cov(x1),'','','']}));
+ if(x1){evergreen.push(mk('Engage',`Giveaway: ${x1.name}`,{type:'giveaway',theme:'noir',...STARTERS.giveaway,imgs:[cov(x1),'','','']}));
+  if(+x1.price>0)evergreen.push(mk('Showcase',`Price drop: ${x1.name}`,{type:'sale',theme:'olive',...STARTERS.sale,headline:x1.name,code:naira(x1.price),price:naira(Math.round(x1.price*.9/500)*500),imgs:[cov(x1),'','','']}))}
  return [...out,...evergreen];
 }
 export const captionOf=s=>{
@@ -68,5 +75,10 @@ export const captionOf=s=>{
  if(s.type==='spotlight')b=ls.length>1?`${h||'New on the shelf'}\n\n${ls.join('\n')}`:`${h||'This one'} is on the shelf.${s.price?`\n\n${s.price}`:''}`;
  else if(s.type==='promo')b=[h,s.sub,ls.length>1&&ls.join('\n'),s.code,s.deadline&&`Ends ${s.deadline}`].filter(Boolean).join('\n\n');
  else if(s.type==='versus')b=`${h||'Which one’s yours?'}\n\n${ls.join('\n')}\n\nTell us in the comments.`;
+ else if(s.type==='sale')b=`${h||'New price'} is now ${s.price||'on offer'}${s.code?` (was ${s.code})`:''}.${s.sub?`\n\n${s.sub}`:''}`;
+ else if(s.type==='countdown')b=[`${h} ${s.sub||''}`.trim(),s.deadline].filter(Boolean).join('\n\n');
+ else if(s.type==='giveaway')b=[`GIVEAWAY: ${h||'Win this watch'}`,(s.sub||'').split('\n').filter(Boolean).map((t,i)=>`${i+1}. ${t}`).join('\n'),s.deadline&&`Ends ${s.deadline}.`].filter(Boolean).join('\n\n');
+ else if(s.type==='testimonial')b=`“${h}”\n— ${s.sub||''}\n\nThank you for the kind words.`;
+ else if(s.type==='steps')b=`${h||'How to order'}\n\n${(s.sub||'').split('\n').filter(Boolean).map((t,i)=>`${i+1}. ${t}`).join('\n')}`;
  else b=[h,s.sub].filter(Boolean).join('\n\n');
  return cap(b||'New from Regis.')};
