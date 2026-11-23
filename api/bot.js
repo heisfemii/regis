@@ -7,6 +7,7 @@ const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>
 const js=o=>JSON.stringify(o).replace(/</g,'\\u003c');
 const jpg=u=>u&&u.includes('res.cloudinary.com')&&u.includes('/upload/')&&!/\/upload\/[^/]*(f_|q_|w_\d)/.test(u)?u.replace('/upload/','/upload/f_jpg,q_auto,w_1200,c_limit/'):(u||'');
 const imgs=w=>[...new Set([w.demo,...(w.colors||[]).flatMap(c=>c.images||[]),w.image].filter(Boolean))].slice(0,6).map(jpg);
+const cut=(s,n=158)=>s.length<=n?s:s.slice(0,n).replace(/\s+\S*$/,'')+'…';
 const naira=n=>'₦'+Number(n||0).toLocaleString('en-NG');
 const nav='<nav><a href="/">Home</a> | <a href="/shop">Shop all watches</a> | <a href="/terms">Terms</a> | <a href="/privacy">Privacy</a> | <a href="/refunds">Refunds</a></nav>';
 const org={'@context':'https://schema.org','@type':'Organization',name:'Regis',url:SITE,logo:SITE+'/apple-touch-icon.png',description:DESC,email:MAIL,sameAs:[IG,XH],areaServed:{'@type':'Country',name:'Nigeria'}};
@@ -23,7 +24,7 @@ export function buildShop(ws,wa){return page({title:'Shop all watches | Regis',d
 export function buildWatch(w,wa){const im=imgs(w),colors=(w.colors||[]).map(c=>c.name).filter(Boolean),desc=[w.description||`${[w.brand,w.name].filter(Boolean).join(' ')} from Regis.`,w.strap&&`Strap: ${w.strap}.`,colors.length&&`Colours: ${colors.join(', ')}.`].filter(Boolean).join(' ');
  const ld={'@context':'https://schema.org','@type':'Product',name:w.name,description:desc,sku:w.id,...(w.brand?{brand:{'@type':'Brand',name:w.brand}}:{}),...(im.length?{image:im}:{}),
   offers:{'@type':'Offer',url:`${SITE}/watch/${encodeURIComponent(w.id)}`,priceCurrency:'NGN',price:String(Number(w.price)||0),availability:w.inStock===false?'https://schema.org/OutOfStock':'https://schema.org/InStock',seller:{'@type':'Organization',name:'Regis'}}};
- return page({title:`${w.name} | Regis`,desc:`${w.name}${w.brand?` by ${w.brand}`:''}, ${naira(w.price)}. ${desc}`.slice(0,300),path:'/watch/'+encodeURIComponent(w.id),image:im[0],type:'product',ld:[ld],
+ return page({title:`${w.name} | Regis`,desc:cut(`${w.name}${w.brand?` by ${w.brand}`:''}, ${naira(w.price)}. ${desc}`),path:'/watch/'+encodeURIComponent(w.id),image:im[0],type:'product',ld:[ld],
   body:`<h1>${esc(w.name)}</h1>${w.brand?`<p>Brand: ${esc(w.brand)}</p>`:''}<p>Price: ${naira(w.price)}</p><p>${w.inStock===false?'Currently out of stock.':'In stock.'}</p><p>${esc(desc)}</p>${im.map(u=>`<img src="${esc(u)}" alt="${esc(w.name)}" width="600">`).join('')}${how(wa)}`})}
 export default async function handler(req,res){
  const type=String(req.query.type||'home'),id=String(req.query.id||'');let html,status=200;
