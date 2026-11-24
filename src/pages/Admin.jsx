@@ -1,6 +1,6 @@
-import {useEffect,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {listWatches,addWatch,updateWatch,deleteWatch,uploadImage,colorsOf,cover} from '../services/watches';
-import {setMarketing,allOrders,listUsers,listAdminIds,confirmOrder,setStage,stageOf,cancelOrder} from '../services/orders';import {LABEL} from '../components/Tracker';import {auth} from '../services/firebase';
+import {setMarketing,watchOrders,watchUsers,listAdminIds,confirmOrder,setStage,stageOf,cancelOrder} from '../services/orders';import {LABEL} from '../components/Tracker';import {auth} from '../services/firebase';
 import {useToast} from '../context/ToastContext';import {naira,fmtDate,normalizePhone,validPhone,fmtPhone} from '../services/config';import {TEMPLATES,fill} from '../services/templates';import {useSettings} from '../context/SettingsContext';import {saveWhatsapp} from '../services/settings';import {msg} from '../services/errors';import {GENDERS} from '../services/genders';import AdminReceipt from '../components/AdminReceipt';
 import ContentStudio from '../components/ContentStudio';import ProfitTab from '../components/ProfitTab';import {getCosts} from '../services/costs';import {summarize} from '../services/profit';
 const blank=()=>({name:'',brand:'',strap:'',price:'',description:'',inStock:true,featured:false,gender:'',demo:'',colors:[{name:'',images:[]}]});
@@ -22,7 +22,11 @@ function OrderRow({x,act}){return <div className="orow"><div className="ohead"><
  {act&&x.status==='paid'&&<div className="ctas left">{NEXT[stageOf(x)]&&<button className="pill" onClick={()=>act.next(x)}>{NEXT[stageOf(x)][1]}</button>}<button className="pill ghost" onClick={()=>act.studio(x)}>Content receipt</button></div>}</div>}
 export default function Admin(){
  const {whatsapp,setWhatsapp}=useSettings(),toast=useToast(),[tab,setTab]=useState('Overview'),[w,setW]=useState([]),[o,setO]=useState([]),[costs,setCosts]=useState({}),[u,setU]=useState([]),[adm,setAdm]=useState([]),[f,setF]=useState(blank()),[eid,setEid]=useState(null),[busy,setBusy]=useState(false),[mail,setMail]=useState({subject:'',message:'',watchId:''}),[tpl,setTpl]=useState('blank'),[waIn,setWaIn]=useState(''),[rc,setRc]=useState(null);
- const load=()=>{listWatches().then(setW);allOrders().then(setO);listUsers().then(setU);listAdminIds().then(setAdm).catch(()=>{});getCosts().then(setCosts).catch(()=>{})};useEffect(load,[]);
+ const load=()=>{listWatches().then(setW);listAdminIds().then(setAdm).catch(()=>{});getCosts().then(setCosts).catch(()=>{})};useEffect(load,[]);
+ const seen=useRef(null);
+ // Orders and customers update live: no refreshing needed. A toast appears when a new order comes in.
+ useEffect(()=>{const off=watchOrders(list=>{const prev=seen.current;seen.current=new Set(list.map(x=>x.id));if(prev){const fresh=list.filter(x=>!prev.has(x.id));if(fresh.length)toast(fresh.length===1?`New order from ${fresh[0].customer||'a customer'}`:`${fresh.length} new orders`)}setO(list)},()=>toast('Live order updates stopped. Refresh the page to reconnect.'));return off},[]);
+ useEffect(()=>watchUsers(setU,()=>{}),[]);
  const set=k=>e=>setF({...f,[k]:e.target.value});
  const setCol=(i,p)=>setF(s=>({...s,colors:s.colors.map((c,n)=>n===i?{...c,...p}:c)}));
  async function up(i,files){setBusy(true);try{const urls=await Promise.all([...files].map(uploadImage));setF(s=>({...s,colors:s.colors.map((c,n)=>n===i?{...c,images:[...c.images,...urls]}:c)}))}catch(e){toast(msg(e,'We couldn’t upload that photo. Check your connection or try a smaller image.'))}setBusy(false)}

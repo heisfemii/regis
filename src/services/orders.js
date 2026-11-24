@@ -1,4 +1,4 @@
-import {collection,addDoc,getDocs,getDoc,query,where,orderBy,writeBatch,updateDoc,doc,serverTimestamp} from 'firebase/firestore';
+import {collection,addDoc,getDocs,onSnapshot,getDoc,query,where,orderBy,writeBatch,updateDoc,doc,serverTimestamp} from 'firebase/firestore';
 import {db,auth} from './firebase';import {WHATSAPP_NUMBER,naira} from './config';
 const m=d=>({id:d.id,...d.data()});
 export async function createOrder(user,name,items,creditsApplied){
@@ -20,5 +20,8 @@ export const myOrders=async uid=>(await getDocs(query(collection(db,'orders'),wh
 export const allOrders=async()=>(await getDocs(query(collection(db,'orders'),orderBy('createdAt','desc')))).docs.map(m);
 export const listAdminIds=async()=>(await getDocs(collection(db,'admins'))).docs.map(d=>d.id);
 export const listUsers=async()=>(await getDocs(collection(db,'users'))).docs.map(m);
+// Live feeds for the admin dashboard: the callback runs now and again whenever anything changes. Returns a function that stops listening.
+export const watchOrders=(cb,err)=>onSnapshot(query(collection(db,'orders'),orderBy('createdAt','desc')),s=>cb(s.docs.map(m)),err);
+export const watchUsers=(cb,err)=>onSnapshot(collection(db,'users'),s=>cb(s.docs.map(m)),err);
 export async function cancelOrder(o){const b=writeBatch(db);b.update(doc(db,'orders',o.id),{status:'cancelled'});await b.commit();}
 export const setMarketing=(uid,val)=>updateDoc(doc(db,'users',uid),{marketing:val});
